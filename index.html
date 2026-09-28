@@ -7,12 +7,15 @@
   <meta name="description" content="Explore four CarDekho datasets, compare trained models, and estimate vehicle resale prices directly in your browser.">
   <title>CarDekho · Price Intelligence</title>
   <link rel="stylesheet" href="web/site.css">
+  <link rel="stylesheet" href="web/premium.css">
   <script type="module" src="web/app.mjs"></script>
 </head>
 <body>
   <a class="skip-link" href="#workspace">Skip to workspace</a>
   <div id="cinematic-hero"></div>
   <script type="module" src="src/main.tsx"></script>
+  <noscript><p class="notice">Enable JavaScript to open the interactive showroom and vehicle price lab.</p></noscript>
+  <div class="workspace-shell" id="workspace">
   <button class="mobile-menu" id="menu-button" type="button" aria-controls="sidebar" aria-expanded="false">☰ <span>Workspace</span></button>
   <aside class="sidebar" id="sidebar" aria-label="Dataset workspace">
     <a class="brand" href="./">CARDEKHO<span>VEHICLE PRICE LAB / WORKSPACE</span></a>
@@ -28,25 +31,13 @@
     <a class="side-link" href="web/data/PRESENTATION_GUIDE.md" download>Presentation guide ↗</a>
   </aside>
 
-  <main id="workspace">
+  <main id="price-lab">
     <header class="topbar"><span>CARDEKHO / PRICE INTELLIGENCE</span><span class="topbar-meta"><i class="status-dot"></i><span id="load-status" role="status">LOADING WORKSPACE</span></span></header>
     <section class="hero" aria-labelledby="hero-title">
-      <div><div class="eyebrow">THE VEHICLE VALUATION WORKSPACE</div><h1 id="hero-title">Every car.<br>A clearer<br><em>perspective.</em></h1><p class="hero-copy">Explore the details. Understand the data. Estimate resale value with a model built from real vehicle listings.</p><div class="hero-tags"><span>04 DATA SOURCES</span><span>03 ALGORITHMS</span><span>12 EXPERIMENTS</span></div></div>
+      <div><div class="eyebrow">THE VEHICLE VALUATION WORKSPACE</div><h2 id="hero-title">The details make<br /><em>the difference.</em></h2><p class="hero-copy">Your vehicle's specifications. A trained model. An estimate grounded in historical listings, with the evidence behind it.</p><div class="hero-tags"><span>REAL MODEL INFERENCE</span><span>INDEPENDENT TESTING</span></div></div>
       <div class="vehicle-stage">
         <div class="stage-header"><span id="profile-code">VEHICLE PROFILE / V3</span><span>01 — PRICE LAB</span></div>
-        <svg viewBox="0 0 540 200" role="img" aria-label="Vehicle silhouette">
-          <defs><linearGradient id="body" x2="0" y2="1"><stop stop-color="#898b92"/><stop offset=".45" stop-color="#4b4c53"/><stop offset="1" stop-color="#222329"/></linearGradient><linearGradient id="window" x2="1" y2="1"><stop stop-color="#9ca0ac" stop-opacity=".7"/><stop offset="1" stop-color="#242730"/></linearGradient><radialGradient id="wheel"><stop stop-color="#44474f"/><stop offset=".5" stop-color="#b0b2ba"/><stop offset=".56" stop-color="#24252a"/><stop offset="1" stop-color="#090a0c"/></radialGradient></defs>
-          <g stroke="#fff" stroke-opacity=".055"><path d="M20 170H520M20 140H520M20 110H520M20 80H520M20 50H520M70 30V190M170 30V190M270 30V190M370 30V190M470 30V190"/></g>
-          <ellipse cx="274" cy="165" rx="219" ry="14" fill="#000" opacity=".5"/>
-          <path d="M43 128 61 108 132 94 182 57Q192 49 214 49H330Q355 51 379 83L401 99 457 109Q487 114 495 132L490 153H48Z" fill="url(#body)" stroke="#bcc0ca" stroke-opacity=".65"/>
-          <path d="M145 94 190 61Q199 57 214 57H254V94ZM264 57H327Q345 58 368 85L379 96H264Z" fill="url(#window)" stroke="#acb0b8" stroke-opacity=".5"/>
-          <path d="M138 102 132 145M258 100V147M390 102 396 145M55 128 484 128" fill="none" stroke="#c6c8d0" stroke-opacity=".24"/>
-          <path d="M153 109H169M277 109H293" stroke="#c8cbd0" stroke-width="2"/>
-          <path d="M453 117 481 123 477 131H456Z" fill="#e6eaf0"/><path d="M52 119 64 116 66 128H48Z" fill="#93959b"/>
-          <path d="M66 147H478" stroke="#b6bac3" stroke-opacity=".35"/>
-          <circle cx="124" cy="146" r="31" fill="#0b0c0f"/><circle cx="124" cy="146" r="25" fill="url(#wheel)"/><circle cx="421" cy="146" r="31" fill="#0b0c0f"/><circle cx="421" cy="146" r="25" fill="url(#wheel)"/>
-          <g fill="#9ca0a8"><circle cx="124" cy="146" r="6"/><circle cx="421" cy="146" r="6"/></g>
-        </svg>
+        <img class="lab-concept-image" src="web/media/grand-tourer-hero.png" alt="Original automotive concept artwork; not the vehicle selected below" loading="lazy" />
         <div class="stage-footer"><div><strong id="stage-title">Detailed vehicle specifications</strong><small>HISTORICAL LISTINGS · INR</small></div><span id="stage-code">CD / V3</span></div>
       </div>
     </section>
@@ -66,13 +57,15 @@
       <div class="identity-grid"><div id="brand-wrapper"><label for="brand">Brand</label><select id="brand" disabled></select></div><div><label for="vehicle">Vehicle model / variant</label><select id="vehicle" disabled></select></div></div>
       <p class="hint">Details are prefilled from a matching listing. Adjust them to describe your vehicle.</p>
       <form id="prediction-form"><fieldset id="vehicle-fields" disabled><legend class="eyebrow">VEHICLE DETAILS / SPECIFICATIONS</legend><div class="field-grid" id="numeric-fields"></div><div class="eyebrow form-section">OWNERSHIP / CONFIGURATION</div><div class="field-grid" id="categorical-fields"></div><button class="primary-button" id="estimate-button" type="submit">Loading trained model…</button></fieldset></form>
-      <div id="result" class="result-card" aria-live="polite" aria-atomic="true" hidden><span class="tag">VALUATION COMPLETE</span><div class="eyebrow">ESTIMATED RESALE VALUE</div><div id="result-price" class="result-price"></div><p id="result-description"></p><p class="hint">Historical listing estimate. Actual prices depend on vehicle condition and market changes.</p><p id="range-warning" class="notice" hidden></p></div>
+      <div id="result" class="result-card" aria-live="polite" aria-atomic="true" hidden><span class="tag">VALUATION COMPLETE</span><div class="eyebrow">ESTIMATED RESALE VALUE</div><div id="result-price" class="result-price"></div><p id="result-description"></p><div class="valuation-evidence"><div><span>DATASET TEST MAE</span><strong id="result-mae">—</strong></div><div><span>INDEPENDENT TEST R²</span><strong id="result-r2">—</strong></div></div><p class="hint">These are dataset-level evaluation metrics, not a confidence interval for this vehicle. Historical listing estimate; actual prices depend on vehicle condition and market changes.</p><p id="range-warning" class="notice" hidden></p><button id="download-valuation" class="secondary-button" type="button">Export valuation record ↗</button></div>
+      <section id="scenario-panel" class="scenario-panel" hidden aria-labelledby="scenario-title"><div class="section-head"><h2 id="scenario-title">One detail. A different perspective.</h2><span>MODEL SENSITIVITY</span></div><p class="section-copy">Vary one specification while holding everything else fixed. This explores the trained model, not a future price forecast or a causal effect.</p><label for="scenario-feature">Explore a specification</label><select id="scenario-feature"></select><div id="scenario-chart" class="scenario-chart"></div><div class="table-wrap"><table><caption id="scenario-caption" class="sr-only">Model predictions as one specification changes</caption><thead><tr><th id="scenario-feature-label">Specification</th><th>Model estimate</th><th>Difference from your estimate</th></tr></thead><tbody id="scenario-body"></tbody></table></div></section>
     </section>
 
     <section id="panel-models" role="tabpanel" aria-labelledby="tab-models" hidden>
       <div class="section-head"><h2>The models, side by side.</h2><span>02 / PRICE LAB</span></div><p class="section-copy">Validation selects the winner. Independent test groups measure performance.</p>
+      <div id="model-scorecards" class="model-scorecards"></div><div id="model-performance" class="model-performance"></div>
       <div class="table-wrap"><table><caption class="sr-only">Three-model validation and test comparison</caption><thead><tr><th>Model</th><th>Selected</th><th>Validation RMSE</th><th>Test MAE</th><th>Test RMSE</th><th>Test R²</th></tr></thead><tbody id="metrics-body"></tbody></table></div>
-      <img id="comparison-chart" class="chart" alt="Comparison of test RMSE and R squared for three models" loading="lazy">
+      <details><summary>Open the full evaluation figure</summary><img id="comparison-chart" class="chart" alt="Comparison of test RMSE and R squared for three models" loading="lazy"></details>
       <p id="baseline-note" class="model-note"></p><a id="download-metrics" class="secondary-button" download>Download results CSV ↗</a>
     </section>
 
@@ -80,6 +73,7 @@
       <div class="section-head"><h2>Look beneath the listings.</h2><span>03 / PRICE LAB</span></div><p class="section-copy">Explore the records and features behind this dataset's predictions.</p>
       <div class="data-metrics"><div class="metric"><span>Original records</span><strong id="raw-rows">—</strong></div><div class="metric"><span>Duplicates removed</span><strong id="duplicates">—</strong></div><div class="metric"><span>Model features</span><strong id="feature-count">—</strong></div></div>
       <p id="dataset-notes" class="model-note"></p><img id="dataset-chart" class="chart" alt="Price distribution and selected-model feature importance" loading="lazy">
+      <div class="importance-section"><h3>What the model pays attention to.</h3><p class="hint">Global impurity-based feature importance. Descriptive, not causal or specific to your vehicle.</p><div id="importance-bars"></div></div>
       <details><summary>Feature definitions & observed ranges</summary><div class="table-wrap"><table><thead><tr><th>Feature</th><th>Type</th><th>Observed range / options</th></tr></thead><tbody id="feature-body"></tbody></table></div></details>
     </section>
 
@@ -92,5 +86,7 @@
     </section>
     <footer><span>CARDEKHO / VEHICLE PRICE LAB</span><span>HISTORICAL DATA · INDEPENDENT TESTING · BROWSER INFERENCE</span></footer>
   </main>
+  </div>
+  <footer class="editorial-footer"><a href="#" class="editorial-brand">CARDEKHO <small>PRICE INTELLIGENCE</small></a><p>An independent academic vehicle-valuation project.<br />Inspired by automotive editorial design. Not affiliated with Ferrari or CarDekho.</p><a href="web/media/ASSET_CREDITS.md">Asset credits & licences ↗</a><span>CRAFTED WITH CURIOSITY. BUILT ON EVIDENCE.</span></footer>
 </body>
 </html>
