@@ -7,5 +7,10 @@ export default defineConfig({
   base: "./",
   plugins: [react(), tailwindcss()],
   resolve: { alias: { "@": fileURLToPath(new URL(".", import.meta.url)) } },
-  build: { outDir: "dist" },
+  server: { proxy: { "/api": { target: "http://127.0.0.1:8000", changeOrigin: true } } },
+  preview: { proxy: { "/api": { target: "http://127.0.0.1:8000", changeOrigin: true } } },
+  build: {
+    outDir: "dist",
+    rollupOptions: { input: { main: fileURLToPath(new URL("./index.html", import.meta.url)), ai: fileURLToPath(new URL("./ai/index.html", import.meta.url)) } },
+  },
 });

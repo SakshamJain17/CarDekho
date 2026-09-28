@@ -1,10 +1,11 @@
 import { predict } from "./inference.mjs";
+import { showModelEvidence, showSensitivity } from "./evidence.mjs";
 
 const $ = (id) => document.getElementById(id);
 const currency = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 const number = new Intl.NumberFormat("en-IN");
 const title = (value) => String(value).replace(/\b\w/g, (letter) => letter.toUpperCase());
-const state = { summary: null, model: null, sequence: 0 };
+const state = { summary: null, model: null, sequence: 0, valuation: null };
 const models = new Map();
 
 async function fetchJSON(path) {
@@ -14,7 +15,7 @@ async function fetchJSON(path) {
 }
 
 function setText(id, value) { $(id).textContent = value; }
-function clearResult() { $("result").hidden = true; }
+function clearResult() { $("result").hidden = true; $("scenario-panel").hidden = true; state.valuation = null; }
 function reportError(message) {
   $("error-message").textContent = message;
   $("error-message").hidden = false;
@@ -39,6 +40,7 @@ function cell(row, text) {
 }
 
 function showSummary(summary) {
+  showModelEvidence(summary);
   const selected = summary.metrics.find((row) => row.selected);
   if (!selected) throw new Error("The dataset has no selected model.");
   setText("selected-model", summary.model_name);
@@ -186,12 +188,23 @@ $("prediction-form").addEventListener("submit", (event) => {
       return [field.name, field.type === "number" ? Number(value) : value];
     }));
     const estimate = Math.max(0, predict(state.model, input));
+    state.valuation = { input, estimate };
+    const selected = state.summary.metrics.find((metric) => metric.selected);
+    setText("result-mae", currency.format(selected.test_mae));
+    setText("result-r2", selected.test_r2.toFixed(3));
     setText("result-price", currency.format(estimate));
     setText("result-description", `₹${(estimate / 100_000).toFixed(2)} lakh · ${title(input.vehicle_name)} · Estimated using ${state.model.model_name}`);
     const outside = state.summary.fields.filter((field) => field.type === "number" && (input[field.name] < field.min || input[field.name] > field.max)).map((field) => field.label);
     $("range-warning").hidden = !outside.length;
     setText("range-warning", `Outside the dataset's observed range: ${outside.join(", ")}`);
     $("result").hidden = false;
+    $("scenario-feature").replaceChildren();
+    for (const field of state.summary.fields.filter((item) => item.type === "number" && item.max > item.min)) {
+      const option = document.createElement("option"); option.value = field.name; option.textContent = field.label;
+      $("scenario-feature").append(option);
+    }
+    $("scenario-panel").hidden = !$("scenario-feature").options.length;
+    showSensitivity(state.valuation, state.model, state.summary);
     $("error-message").hidden = true;
     $("result").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" });
   } catch (error) { reportError(error.message); }
@@ -200,6 +213,14 @@ $("brand").addEventListener("change", changeBrand);
 $("vehicle").addEventListener("change", setDefaults);
 $("prediction-form").addEventListener("input", clearResult);
 $("prediction-form").addEventListener("change", clearResult);
+$("scenario-feature").addEventListener("change", () => showSensitivity(state.valuation, state.model, state.summary));
+$("download-valuation").addEventListener("click", () => {
+  if (!state.valuation || !state.summary) return;
+  const record = { created_at: new Date().toISOString(), dataset: state.summary.key, model: state.summary.model_name, source_sha256: state.summary.source_sha256, ...state.valuation, independent_test_metrics: state.summary.metrics.find((metric) => metric.selected), limitations: "Historical listing estimate, not a current-market appraisal. Dataset evaluation metrics are not a prediction confidence interval." };
+  const url = URL.createObjectURL(new Blob([JSON.stringify(record, null, 2)], { type: "application/json" }));
+  const link = document.createElement("a"); link.href = url; link.download = `cardekho-${state.summary.key}-valuation.json`; link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
 
 const tabs = [...document.querySelectorAll('[role="tab"]')];
 function activateTab(tab, focus = false) {
@@ -232,7 +253,7 @@ document.addEventListener("keydown", (event) => {
 
 async function init() {
   if (location.protocol === "file:") {
-    reportError("Use a local web server to open this website: python3 -m http.server 8000, then visit http://localhost:8000. JSON assets cannot load reliably from a file URL.");
+    reportError("Run npm run dev and open http://localhost:5173, or build and serve dist/. Source React/TypeScript cannot run from a file URL or Live Server.");
     return;
   }
   try {
