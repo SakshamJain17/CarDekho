@@ -1,0 +1,51 @@
+{
+  "dataset": "v4",
+  "model_name": "Gradient Boosting",
+  "features": [
+    "year",
+    "km_driven",
+    "engine",
+    "max_power",
+    "seats",
+    "length",
+    "width",
+    "height",
+    "fuel_tank_capacity",
+    "brand",
+    "vehicle_name",
+    "fuel",
+    "seller_type",
+    "transmission",
+    "owner",
+    "location",
+    "color",
+    "drivetrain"
+  ],
+  "training_rows": 2059,
+  "trained_at_utc": "2026-09-28T17:50:40.113755+00:00",
+  "source_sha256": "6841a81165c2a390d84b361555489e123f739f0e4b2bfe7915e759746b3efe59",
+  "price_unit": "INR",
+  "selection": "lowest validation RMSE",
+  "audit": {
+    "dataset": "v4",
+    "filename": "car details v4.csv",
+    "raw_rows": 2059,
+    "raw_exact_duplicates": 0,
+    "invalid_rows_removed": 0,
+    "normalized_duplicates_removed": 0,
+    "clean_rows": 2059,
+    "feature_count": 18,
+    "missing_feature_cells": 665,
+    "price_unit": "INR",
+    "notes": "Includes location, dimensions and drivetrain, but no mileage. Torque is excluded. Some luxury vehicles create large price outliers."
+  },
+  "python_version": "3.9.6",
+  "packages": {
+    "pandas": "2.3.3",
+    "numpy": "2.0.2",
+    "scikit-learn": "1.6.1",
+    "joblib": "1.5.3",
+    "matplotlib": "3.9.4",
+    "streamlit": "1.50.0"
+  }
+}

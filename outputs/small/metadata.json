@@ -1,0 +1,41 @@
+{
+  "dataset": "small",
+  "model_name": "Gradient Boosting",
+  "features": [
+    "year",
+    "km_driven",
+    "present_price",
+    "previous_owners",
+    "vehicle_name",
+    "fuel",
+    "seller_type",
+    "transmission"
+  ],
+  "training_rows": 299,
+  "trained_at_utc": "2026-09-28T17:50:50.540518+00:00",
+  "source_sha256": "00b477def120548e583c638b00146982956b80646817901245ef78da9c4b3063",
+  "price_unit": "INR",
+  "selection": "lowest validation RMSE",
+  "audit": {
+    "dataset": "small",
+    "filename": "car data.csv",
+    "raw_rows": 301,
+    "raw_exact_duplicates": 2,
+    "invalid_rows_removed": 0,
+    "normalized_duplicates_removed": 0,
+    "clean_rows": 299,
+    "feature_count": 8,
+    "missing_feature_cells": 0,
+    "price_unit": "INR",
+    "notes": "Contains cars and motorcycles. Selling_Price and Present_Price are treated as INR lakhs and multiplied by 100,000. This is an explicit assumption inferred from the values; no supplied data dictionary confirms units. Owner is preserved as a numeric count. Present price must be known at prediction time."
+  },
+  "python_version": "3.9.6",
+  "packages": {
+    "pandas": "2.3.3",
+    "numpy": "2.0.2",
+    "scikit-learn": "1.6.1",
+    "joblib": "1.5.3",
+    "matplotlib": "3.9.4",
+    "streamlit": "1.50.0"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "dataset": "v3",
+  "model_name": "Gradient Boosting",
+  "features": [
+    "year",
+    "km_driven",
+    "mileage",
+    "engine",
+    "max_power",
+    "seats",
+    "brand",
+    "vehicle_name",
+    "fuel",
+    "seller_type",
+    "transmission",
+    "owner"
+  ],
+  "training_rows": 6926,
+  "trained_at_utc": "2026-09-28T17:50:24.072189+00:00",
+  "source_sha256": "1b2a30b2f36fd246366773fe5375399692f1a113890ad2a6d464b8c8deaadadb",
+  "price_unit": "INR",
+  "selection": "lowest validation RMSE",
+  "audit": {
+    "dataset": "v3",
+    "filename": "Car details v3.csv",
+    "raw_rows": 8128,
+    "raw_exact_duplicates": 1202,
+    "invalid_rows_removed": 0,
+    "normalized_duplicates_removed": 0,
+    "clean_rows": 6926,
+    "feature_count": 12,
+    "missing_feature_cells": 848,
+    "price_unit": "INR",
+    "notes": "Detailed car listings. Mileage keeps its original km/l or km/kg unit; fuel is a feature. Torque is excluded because its units and formatting vary."
+  },
+  "python_version": "3.9.6",
+  "packages": {
+    "pandas": "2.3.3",
+    "numpy": "2.0.2",
+    "scikit-learn": "1.6.1",
+    "joblib": "1.5.3",
+    "matplotlib": "3.9.4",
+    "streamlit": "1.50.0"
+  }
+}

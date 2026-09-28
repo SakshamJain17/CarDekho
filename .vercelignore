@@ -1,0 +1,11 @@
+.venv
+__pycache__
+data
+models
+outputs
+artifacts
+tests
+.streamlit
+*.py
+requirements.txt
+.DS_Store

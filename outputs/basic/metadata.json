@@ -1,0 +1,41 @@
+{
+  "dataset": "basic",
+  "model_name": "Random Forest",
+  "features": [
+    "year",
+    "km_driven",
+    "brand",
+    "vehicle_name",
+    "fuel",
+    "seller_type",
+    "transmission",
+    "owner"
+  ],
+  "training_rows": 3577,
+  "trained_at_utc": "2026-09-28T17:50:48.797865+00:00",
+  "source_sha256": "454fe4ea4f6d2af973493287abf0631006a32bd4f462103e4dfcffa75d721edf",
+  "price_unit": "INR",
+  "selection": "lowest validation RMSE",
+  "audit": {
+    "dataset": "basic",
+    "filename": "CAR DETAILS FROM CAR DEKHO.csv",
+    "raw_rows": 4340,
+    "raw_exact_duplicates": 763,
+    "invalid_rows_removed": 0,
+    "normalized_duplicates_removed": 0,
+    "clean_rows": 3577,
+    "feature_count": 8,
+    "missing_feature_cells": 0,
+    "price_unit": "INR",
+    "notes": "Basic vehicle details without engine, power or mileage specifications."
+  },
+  "python_version": "3.9.6",
+  "packages": {
+    "pandas": "2.3.3",
+    "numpy": "2.0.2",
+    "scikit-learn": "1.6.1",
+    "joblib": "1.5.3",
+    "matplotlib": "3.9.4",
+    "streamlit": "1.50.0"
+  }
+}

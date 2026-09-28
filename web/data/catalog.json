@@ -1,0 +1,24 @@
+{
+  "datasets": [
+    {
+      "key": "v3",
+      "label": "Car details v3",
+      "summary_url": "web/data/v3.json"
+    },
+    {
+      "key": "v4",
+      "label": "Car details v4",
+      "summary_url": "web/data/v4.json"
+    },
+    {
+      "key": "basic",
+      "label": "Basic CarDekho listings",
+      "summary_url": "web/data/basic.json"
+    },
+    {
+      "key": "small",
+      "label": "Small vehicle dataset (cars + motorcycles)",
+      "summary_url": "web/data/small.json"
+    }
+  ]
+}

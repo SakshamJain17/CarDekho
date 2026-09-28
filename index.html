@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0a0a0b">
+  <meta name="description" content="Explore four CarDekho datasets, compare trained models, and estimate vehicle resale prices directly in your browser.">
+  <title>CarDekho · Price Intelligence</title>
+  <link rel="stylesheet" href="web/site.css">
+  <script type="module" src="web/app.mjs"></script>
+</head>
+<body>
+  <a class="skip-link" href="#workspace">Skip to workspace</a>
+  <div id="cinematic-hero"></div>
+  <script type="module" src="src/main.tsx"></script>
+  <button class="mobile-menu" id="menu-button" type="button" aria-controls="sidebar" aria-expanded="false">☰ <span>Workspace</span></button>
+  <aside class="sidebar" id="sidebar" aria-label="Dataset workspace">
+    <a class="brand" href="./">CARDEKHO<span>VEHICLE PRICE LAB / WORKSPACE</span></a>
+    <label class="eyebrow" for="dataset">ACTIVE DATASET</label>
+    <select id="dataset" disabled><option>Loading datasets…</option></select>
+    <div class="side-section">VALIDATION-SELECTED MODEL</div>
+    <div class="side-model" id="selected-model">—</div>
+    <div class="metric"><span>Independent test R²</span><strong id="test-r2">—</strong></div>
+    <div class="metric"><span>Test MAE</span><strong id="test-mae">—</strong></div>
+    <div class="metric"><span>Test RMSE</span><strong id="test-rmse">—</strong></div>
+    <div class="side-note">Four complementary datasets.<br>One workspace to explore them.<br><br>Predictions run in your browser using the exported, trained models.</div>
+    <a class="side-link" href="web/data/PROJECT_REPORT.md" download>Download project report ↗</a>
+    <a class="side-link" href="web/data/PRESENTATION_GUIDE.md" download>Presentation guide ↗</a>
+  </aside>
+
+  <main id="workspace">
+    <header class="topbar"><span>CARDEKHO / PRICE INTELLIGENCE</span><span class="topbar-meta"><i class="status-dot"></i><span id="load-status" role="status">LOADING WORKSPACE</span></span></header>
+    <section class="hero" aria-labelledby="hero-title">
+      <div><div class="eyebrow">THE VEHICLE VALUATION WORKSPACE</div><h1 id="hero-title">Every car.<br>A clearer<br><em>perspective.</em></h1><p class="hero-copy">Explore the details. Understand the data. Estimate resale value with a model built from real vehicle listings.</p><div class="hero-tags"><span>04 DATA SOURCES</span><span>03 ALGORITHMS</span><span>12 EXPERIMENTS</span></div></div>
+      <div class="vehicle-stage">
+        <div class="stage-header"><span id="profile-code">VEHICLE PROFILE / V3</span><span>01 — PRICE LAB</span></div>
+        <svg viewBox="0 0 540 200" role="img" aria-label="Vehicle silhouette">
+          <defs><linearGradient id="body" x2="0" y2="1"><stop stop-color="#898b92"/><stop offset=".45" stop-color="#4b4c53"/><stop offset="1" stop-color="#222329"/></linearGradient><linearGradient id="window" x2="1" y2="1"><stop stop-color="#9ca0ac" stop-opacity=".7"/><stop offset="1" stop-color="#242730"/></linearGradient><radialGradient id="wheel"><stop stop-color="#44474f"/><stop offset=".5" stop-color="#b0b2ba"/><stop offset=".56" stop-color="#24252a"/><stop offset="1" stop-color="#090a0c"/></radialGradient></defs>
+          <g stroke="#fff" stroke-opacity=".055"><path d="M20 170H520M20 140H520M20 110H520M20 80H520M20 50H520M70 30V190M170 30V190M270 30V190M370 30V190M470 30V190"/></g>
+          <ellipse cx="274" cy="165" rx="219" ry="14" fill="#000" opacity=".5"/>
+          <path d="M43 128 61 108 132 94 182 57Q192 49 214 49H330Q355 51 379 83L401 99 457 109Q487 114 495 132L490 153H48Z" fill="url(#body)" stroke="#bcc0ca" stroke-opacity=".65"/>
+          <path d="M145 94 190 61Q199 57 214 57H254V94ZM264 57H327Q345 58 368 85L379 96H264Z" fill="url(#window)" stroke="#acb0b8" stroke-opacity=".5"/>
+          <path d="M138 102 132 145M258 100V147M390 102 396 145M55 128 484 128" fill="none" stroke="#c6c8d0" stroke-opacity=".24"/>
+          <path d="M153 109H169M277 109H293" stroke="#c8cbd0" stroke-width="2"/>
+          <path d="M453 117 481 123 477 131H456Z" fill="#e6eaf0"/><path d="M52 119 64 116 66 128H48Z" fill="#93959b"/>
+          <path d="M66 147H478" stroke="#b6bac3" stroke-opacity=".35"/>
+          <circle cx="124" cy="146" r="31" fill="#0b0c0f"/><circle cx="124" cy="146" r="25" fill="url(#wheel)"/><circle cx="421" cy="146" r="31" fill="#0b0c0f"/><circle cx="421" cy="146" r="25" fill="url(#wheel)"/>
+          <g fill="#9ca0a8"><circle cx="124" cy="146" r="6"/><circle cx="421" cy="146" r="6"/></g>
+        </svg>
+        <div class="stage-footer"><div><strong id="stage-title">Detailed vehicle specifications</strong><small>HISTORICAL LISTINGS · INR</small></div><span id="stage-code">CD / V3</span></div>
+      </div>
+    </section>
+    <div class="overview-strip"><div><span>Active dataset</span><strong id="active-code">—</strong></div><div><span>Cleaned listings</span><strong id="clean-rows">—</strong></div><div><span>Median listing price</span><strong id="median-price">—</strong></div><div><span>Independent test R²</span><strong id="overview-r2">—</strong></div></div>
+    <noscript><p class="notice error">Enable JavaScript to load the datasets and run predictions.</p></noscript>
+    <p id="error-message" class="notice error" role="alert" hidden></p>
+    <div class="tabs" role="tablist" aria-label="Price Lab views">
+      <button id="tab-predict" role="tab" aria-selected="true" aria-controls="panel-predict" data-panel="predict">Predict price</button>
+      <button id="tab-models" role="tab" aria-selected="false" aria-controls="panel-models" data-panel="models" tabindex="-1">Model comparison</button>
+      <button id="tab-data" role="tab" aria-selected="false" aria-controls="panel-data" data-panel="data" tabindex="-1">Dataset overview</button>
+      <button id="tab-method" role="tab" aria-selected="false" aria-controls="panel-method" data-panel="method" tabindex="-1">Method & limitations</button>
+    </div>
+
+    <section id="panel-predict" role="tabpanel" aria-labelledby="tab-predict">
+      <div class="section-head"><h2>Your vehicle. Your estimate.</h2><span>01 / PRICE LAB</span></div><p class="section-copy">Choose a vehicle, refine its details, and explore an estimate based on historical listings.</p>
+      <p id="unit-notice" class="notice" hidden>This dataset includes cars and motorcycles. Source prices are assumed to be in lakhs and converted to rupees.</p>
+      <div class="identity-grid"><div id="brand-wrapper"><label for="brand">Brand</label><select id="brand" disabled></select></div><div><label for="vehicle">Vehicle model / variant</label><select id="vehicle" disabled></select></div></div>
+      <p class="hint">Details are prefilled from a matching listing. Adjust them to describe your vehicle.</p>
+      <form id="prediction-form"><fieldset id="vehicle-fields" disabled><legend class="eyebrow">VEHICLE DETAILS / SPECIFICATIONS</legend><div class="field-grid" id="numeric-fields"></div><div class="eyebrow form-section">OWNERSHIP / CONFIGURATION</div><div class="field-grid" id="categorical-fields"></div><button class="primary-button" id="estimate-button" type="submit">Loading trained model…</button></fieldset></form>
+      <div id="result" class="result-card" aria-live="polite" aria-atomic="true" hidden><span class="tag">VALUATION COMPLETE</span><div class="eyebrow">ESTIMATED RESALE VALUE</div><div id="result-price" class="result-price"></div><p id="result-description"></p><p class="hint">Historical listing estimate. Actual prices depend on vehicle condition and market changes.</p><p id="range-warning" class="notice" hidden></p></div>
+    </section>
+
+    <section id="panel-models" role="tabpanel" aria-labelledby="tab-models" hidden>
+      <div class="section-head"><h2>The models, side by side.</h2><span>02 / PRICE LAB</span></div><p class="section-copy">Validation selects the winner. Independent test groups measure performance.</p>
+      <div class="table-wrap"><table><caption class="sr-only">Three-model validation and test comparison</caption><thead><tr><th>Model</th><th>Selected</th><th>Validation RMSE</th><th>Test MAE</th><th>Test RMSE</th><th>Test R²</th></tr></thead><tbody id="metrics-body"></tbody></table></div>
+      <img id="comparison-chart" class="chart" alt="Comparison of test RMSE and R squared for three models" loading="lazy">
+      <p id="baseline-note" class="model-note"></p><a id="download-metrics" class="secondary-button" download>Download results CSV ↗</a>
+    </section>
+
+    <section id="panel-data" role="tabpanel" aria-labelledby="tab-data" hidden>
+      <div class="section-head"><h2>Look beneath the listings.</h2><span>03 / PRICE LAB</span></div><p class="section-copy">Explore the records and features behind this dataset's predictions.</p>
+      <div class="data-metrics"><div class="metric"><span>Original records</span><strong id="raw-rows">—</strong></div><div class="metric"><span>Duplicates removed</span><strong id="duplicates">—</strong></div><div class="metric"><span>Model features</span><strong id="feature-count">—</strong></div></div>
+      <p id="dataset-notes" class="model-note"></p><img id="dataset-chart" class="chart" alt="Price distribution and selected-model feature importance" loading="lazy">
+      <details><summary>Feature definitions & observed ranges</summary><div class="table-wrap"><table><thead><tr><th>Feature</th><th>Type</th><th>Observed range / options</th></tr></thead><tbody id="feature-body"></tbody></table></div></details>
+    </section>
+
+    <section id="panel-method" role="tabpanel" aria-labelledby="tab-method" hidden>
+      <div class="section-head"><h2>Built on evidence.</h2><span>04 / PRICE LAB</span></div><p class="section-copy">Follow the evaluation process and understand the limits of the estimate.</p>
+      <div class="method-grid"><article><span class="eyebrow">01 / LEARN</span><h3>Train on 60%.</h3><p>Identical feature rows stay together. Imputation and encoding are fitted inside each training pipeline.</p></article><article><span class="eyebrow">02 / SELECT</span><h3>Validate on 20%.</h3><p>Compare three algorithms on the same validation groups. Lowest validation RMSE selects the model.</p></article><article><span class="eyebrow">03 / EVALUATE</span><h3>Test on 20%.</h3><p>Report results on independent test groups. Refit all three pipelines on complete data for the demonstration.</p></article></div>
+      <p class="model-note">MAE is average absolute error in rupees. RMSE emphasizes large errors. R² compares with predicting the test-set mean. Dataset scores describe different populations and cannot be treated as a single ranking.</p>
+      <p class="model-note">Historical listing prices do not establish current-market accuracy. Vehicle condition, accidents, and service history are absent. Small-dataset price units are an explicit assumption. Feature importance is descriptive, not causal.</p>
+      <img id="diagnostics-chart" class="chart" alt="Independent test predictions and residual distribution" loading="lazy">
+    </section>
+    <footer><span>CARDEKHO / VEHICLE PRICE LAB</span><span>HISTORICAL DATA · INDEPENDENT TESTING · BROWSER INFERENCE</span></footer>
+  </main>
+</body>
+</html>

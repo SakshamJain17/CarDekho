@@ -1,0 +1,5 @@
+dataset,filename,raw_rows,raw_exact_duplicates,invalid_rows_removed,normalized_duplicates_removed,clean_rows,feature_count,missing_feature_cells,price_unit,notes
+v3,Car details v3.csv,8128,1202,0,0,6926,12,848,INR,Detailed car listings. Mileage keeps its original km/l or km/kg unit; fuel is a feature. Torque is excluded because its units and formatting vary.
+v4,car details v4.csv,2059,0,0,0,2059,18,665,INR,"Includes location, dimensions and drivetrain, but no mileage. Torque is excluded. Some luxury vehicles create large price outliers."
+basic,CAR DETAILS FROM CAR DEKHO.csv,4340,763,0,0,3577,8,0,INR,"Basic vehicle details without engine, power or mileage specifications."
+small,car data.csv,301,2,0,0,299,8,0,INR,"Contains cars and motorcycles. Selling_Price and Present_Price are treated as INR lakhs and multiplied by 100,000. This is an explicit assumption inferred from the values; no supplied data dictionary confirms units. Owner is preserved as a numeric count. Present price must be known at prediction time."
