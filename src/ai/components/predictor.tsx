@@ -261,9 +261,15 @@ function ModelSensitivity({
 export function PricePredictor({
   project,
   apiReady,
+  valuationImage = heroImage,
+  valuationImageAlt = "Illustrative red concept car, not the vehicle being configured",
+  valuationImageCaption = "ILLUSTRATIVE CONCEPT / NOT YOUR LISTING",
 }: {
   project: Project;
   apiReady: boolean;
+  valuationImage?: string;
+  valuationImageAlt?: string;
+  valuationImageCaption?: string;
 }) {
   const [vehicle, setVehicle] = useState<Vehicle>(() =>
     defaults(project, project.profiles[0]),
@@ -501,14 +507,8 @@ export function PricePredictor({
             )}
           </form>
           <div className="ai-valuation-panel">
-            <img
-              src={heroImage}
-              alt="Illustrative red concept car, not the vehicle being configured"
-              loading="lazy"
-            />
-            <span className="ai-concept-label">
-              ILLUSTRATIVE CONCEPT / NOT YOUR LISTING
-            </span>
+            <img src={valuationImage} alt={valuationImageAlt} loading="lazy" />
+            <span className="ai-concept-label">{valuationImageCaption}</span>
             <div
               className="ai-valuation-content"
               aria-live="polite"

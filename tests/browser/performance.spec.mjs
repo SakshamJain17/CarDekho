@@ -6,7 +6,7 @@ test("performance edition has genuine model results and Python valuations", asyn
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/performance/");
-  await expect(page.locator("h1")).toContainText("WITHOUT");
+  await expect(page.locator("h1")).toContainText("EVERY CAR");
   await expect(page.locator(".performance-hero-image")).toHaveJSProperty(
     "complete",
     true,

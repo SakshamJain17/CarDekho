@@ -23,10 +23,9 @@ import {
   Conclusion,
 } from "../ai/components/technical";
 import { count, money } from "../ai/components/ui";
+import HeroFilm, { drivingPoster } from "./HeroFilm";
 
 const CarShowroom = lazy(() => import("../../components/ui/car-showroom"));
-const image = new URL("../web/media/performance-hero.png", document.baseURI)
-  .href;
 const poster = new URL("../web/media/car-concept-poster.jpg", document.baseURI)
   .href;
 const descriptions: Record<
@@ -53,25 +52,18 @@ const descriptions: Record<
 function Hero({ project }: { project: Project }) {
   return (
     <section id="overview" className="performance-hero">
-      <img
-        className="performance-hero-image"
-        src={image}
-        alt="Original graphite concept sports car with yellow details in a concrete mountain studio"
-        width="1672"
-        height="941"
-        fetchPriority="high"
-      />
+      <HeroFilm />
       <div className="performance-hero-shade" />
       <div className="performance-hero-copy">
         <span className="performance-eyebrow">
           CARDEKHO AI / PERFORMANCE EDITION
         </span>
         <h1>
-          VALUE.
+          EVERY CAR.
           <br />
-          WITHOUT
+          A STORY.
           <br />
-          <span>GUESSWORK.</span>
+          <span>A VALUE.</span>
         </h1>
         <p>
           Look beyond the badge.
@@ -108,9 +100,6 @@ function Hero({ project }: { project: Project }) {
           <span>DISCOVER THE LINE-UP</span>
         </a>
       </div>
-      <span className="performance-image-note">
-        ORIGINAL CONCEPT ART / NOT YOUR CONFIGURED VEHICLE
-      </span>
     </section>
   );
 }
@@ -354,7 +343,13 @@ export default function App() {
         <ModelComparison project={project} />
         <ActualVsPredicted project={project} />
         <FeatureImportance project={project} />
-        <PricePredictor project={project} apiReady={apiReady} />
+        <PricePredictor
+          project={project}
+          apiReady={apiReady}
+          valuationImage={drivingPoster}
+          valuationImageAlt="Real driving-footage frame, not the configured vehicle"
+          valuationImageCaption="REAL FOOTAGE / NOT YOUR CONFIGURED LISTING"
+        />
         <BusinessValue />
         <Architecture project={project} />
         <Conclusion />

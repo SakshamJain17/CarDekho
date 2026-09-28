@@ -48,3 +48,15 @@ no source imports, and the now-unused GSAP dependency. Both are recoverable from
 Git history. Existing styling scaffolding stays because the homepage imports it.
 Duplicate CSV archives and historical model artifacts are retained as user data,
 not treated as disposable files. No training, data or model file is modified.
+
+## Real-footage follow-up
+
+The user rejected the generated supercar image. `/performance/` now uses a
+locally hosted, licensed real-driving MP4 with a real-frame poster, pause/play,
+an accessible intro-film dialog and offscreen/hidden-tab playback suspension.
+Reduced-motion/data-saver preferences suppress automatic video downloads.
+Generated imagery is also removed from that edition's valuation panel via
+optional presenter props whose defaults preserve `/ai/`. The rejected PNG was
+moved out of the project to `/tmp/cardekho-retired-performance-hero-39ccacd.png`
+and is recoverable from Git history. Root and `/ai/` presentation defaults,
+Python pipelines, APIs, data, models and metric outputs remain unchanged.

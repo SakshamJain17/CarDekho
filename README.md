@@ -5,9 +5,11 @@
 The current homepage (`/`) and editorial AI edition (`/ai/`) are preserved.
 The separate **`/performance/`** entry introduces an original graphite/yellow
 automotive design, hexagonal controls, an interactive model line-up and an
-opt-in, locally hosted Three.js showroom. Its photography is original generated
-concept artwork—not Lamborghini branding, a copied vehicle photograph or the
-configured listing. The design reference is
+opt-in, locally hosted Three.js showroom. Its homepage now uses licensed real
+driving footage—not the previous AI-generated supercar image. A muted loop,
+pause/play control and accessible "Watch the intro" player provide the video
+experience. A genuine frame from the footage is the poster and valuation image.
+The design reference is
 [Lamborghini's official website](https://www.lamborghini.com/en-en).
 
 Run the existing FastAPI backend and Vite frontend as documented below, then
@@ -20,8 +22,10 @@ motifs, not data charts. Paint changes in the 3D concept showroom do not change
 prices. The 10.3 MB GLB loads only after entering the showroom.
 
 New files live in `performance/`, `src/performance/`, and
-`tests/browser/performance.spec.mjs`. The generated hero is
-`web/media/performance-hero.png`; its generation prompt and attribution are in
+`tests/browser/performance.spec.mjs` and `tests/browser/video.spec.mjs`. The
+locally hosted intro is `web/media/driving-intro.mp4` (1280x720, 7.38 seconds,
+approximately 1.74 MB); the real-frame poster is `driving-intro-poster.jpg`.
+Provenance and license are retained in `driving-intro.metadata.json` and
 `web/media/ASSET_CREDITS.md`. CSS overrides are loaded only by this separate
 entry, so existing pages retain their appearance. The shared showroom's optional
 asset-base prop supports the nested route. Its opt-in performance studio adds a
@@ -32,6 +36,14 @@ Cleanup removes the unreferenced legacy `hero-scrub.tsx` component and unused
 GSAP dependency. They are recoverable from Git history. Original CSVs, fitted
 models, training scripts and evaluation outputs are retained. The existing
 Vercel/Python deployment requirements below also apply to this edition.
+
+The video is muted/inline and loops on the homepage, pauses offscreen and when
+the tab is hidden, and never downloads automatically for reduced-motion or
+data-saver users. These users can explicitly opt into playback. Video failures
+keep the real poster visible and do not disable model predictions. The intro
+player uses native controls/fullscreen; Escape closes its accessible dialog.
+No fabricated audio, generated imagery or Lamborghini campaign footage is used
+in the performance edition. The other two editions' existing imagery is preserved.
 
 To test the built performance edition, start `npm run preview`, then run
 `CARDEKHO_TEST_URL=http://127.0.0.1:4173 npm run test:browser -- tests/browser/performance.spec.mjs`.

@@ -33,10 +33,27 @@ Google Fonts repository. Both are distributed under the SIL Open Font License
 1.1. License texts are retained in `fonts/SpaceGrotesk-OFL.txt` and
 `fonts/Inter-OFL.txt`. Font source: https://github.com/google/fonts/tree/main/ofl.
 
-## Performance edition original artwork
+## Performance edition real-footage intro (current)
 
-`performance-hero.png` was generated using the built-in image-generation tool,
-then copied into this repository. It is original fictional concept artwork, not
+`driving-intro.mp4` is locally hosted real stock-driving footage from
+[Mixkit item 52427](https://mixkit.co/free-stock-video/a-red-sports-car-traveling-along-a-curvy-asphalt-road-52427/),
+"A red sports car traveling along a curvy asphalt road at dawn". Its source page
+explicitly permits commercial/personal use under the
+[Mixkit Stock Video Free License](https://mixkit.co/license/#videoFree), checked
+2026-09-29. It is embedded in this website, not redistributed as a stock library.
+Depicted automaker trademarks are not project branding and imply no endorsement.
+
+The 1920x1080 source was downscaled to 1280x720 H.264, stripped of audio, and
+encoded with CRF 23 / faststart for a 1.74 MB, 7.38-second inline loop.
+`driving-intro-poster.jpg` is a genuine frame extracted at two seconds from the
+same footage—not a generated image. `driving-intro.metadata.json` records source,
+license, dimensions and transformations. It is also the performance edition's
+valuation-panel image, explicitly labeled as unrelated to the selected listing.
+
+## Retired performance artwork (history only)
+
+The previous generated `performance-hero.png` has been removed from the active
+project at the user's request. It is recoverable from Git history. It was fictional concept artwork, not
 a Lamborghini photograph, a configured listing or a model-output visualization.
 No affiliation with Lamborghini is implied. The other websites' artwork is
 preserved unchanged.
