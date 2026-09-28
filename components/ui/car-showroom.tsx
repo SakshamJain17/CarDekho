@@ -7,7 +7,7 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { Maximize2, Minimize2, Pause, Play, RotateCcw } from "lucide-react";
 
 const finishes = [{ name: "Carmine", color: "#a80c24" }, { name: "Pearl", color: "#d8d8d1" }, { name: "Graphite", color: "#252932" }, { name: "Champagne", color: "#b39b71" }];
-export default function CarShowroom() {
+export default function CarShowroom({ assetBase = "web/media/", studio = "standard" }: { assetBase?: string; studio?: "standard" | "performance" }) {
   const mount = useRef<HTMLDivElement>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
   const paintRef = useRef<THREE.MeshPhysicalMaterial[]>([]);
@@ -15,7 +15,7 @@ export default function CarShowroom() {
   const [status, setStatus] = useState("Loading the concept car…");
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
-  const [finish, setFinish] = useState(0);
+  const [finish, setFinish] = useState(studio === "performance" ? 2 : 0);
   const [rotating, setRotating] = useState(!reduced.current);
   const [expanded, setExpanded] = useState(false);
   useEffect(() => {
@@ -25,11 +25,13 @@ export default function CarShowroom() {
     try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" }); }
     catch { setFailed(true); setStatus("3D isn't available on this device. The price lab still works."); return; }
     let disposed = false, visible = true;
-    const scene = new THREE.Scene(); scene.background = new THREE.Color("#101011");
-    const camera = new THREE.PerspectiveCamera(34, 1, 0.05, 100);
-    const defaultPosition = new THREE.Vector3(6.6, 2.65, 7.6); camera.position.copy(defaultPosition);
+    const cinematic = studio === "performance";
+    const scene = new THREE.Scene(); scene.background = new THREE.Color(cinematic ? "#08090a" : "#101011");
+    if (cinematic) scene.fog = new THREE.Fog(0x08090a, 9, 28);
+    const camera = new THREE.PerspectiveCamera(cinematic ? 30 : 34, 1, 0.05, 100);
+    const defaultPosition = cinematic ? new THREE.Vector3(4.6, 1.65, 5.0) : new THREE.Vector3(6.6, 2.65, 7.6); camera.position.copy(defaultPosition);
     renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
-    renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = cinematic ? 0.85 : 1.05;
     renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.domElement.setAttribute("aria-label", "Interactive concept car. Drag to rotate or use the arrow keys; plus and minus zoom.");
     renderer.domElement.tabIndex = 0; host.appendChild(renderer.domElement);
@@ -41,16 +43,17 @@ export default function CarShowroom() {
     const pmrem = new THREE.PMREMGenerator(renderer), environment = new RoomEnvironment();
     const environmentTexture = pmrem.fromScene(environment, 0.04); scene.environment = environmentTexture.texture;
     environment.dispose(); pmrem.dispose();
-    scene.add(new THREE.HemisphereLight(0xd8e0f2, 0x393333, 1.3));
-    const key = new THREE.DirectionalLight(0xffffff, 4); key.position.set(3, 7, 4); key.castShadow = true;
+    if (cinematic) scene.environmentIntensity = 0.55;
+    scene.add(new THREE.HemisphereLight(0xd8e0f2, 0x393333, cinematic ? 0.7 : 1.3));
+    const key = new THREE.DirectionalLight(0xffffff, cinematic ? 2.5 : 4); key.position.set(3, 7, 4); key.castShadow = true;
     key.shadow.mapSize.set(1024, 1024); key.shadow.camera.left = -5; key.shadow.camera.right = 5;
     key.shadow.camera.top = 5; key.shadow.camera.bottom = -5; key.shadow.normalBias = 0.025; scene.add(key);
-    const rim = new THREE.DirectionalLight(0xd1dfff, 2.2); rim.position.set(-5, 3, -4); scene.add(rim);
-    const floor = new THREE.Mesh(new THREE.CircleGeometry(20, 96), new THREE.MeshStandardMaterial({ color: 0x171719, roughness: 0.78, metalness: 0.15 }));
+    const rim = new THREE.DirectionalLight(0xd1dfff, cinematic ? 1.4 : 2.2); rim.position.set(-5, 3, -4); scene.add(rim);
+    const floor = new THREE.Mesh(cinematic ? new THREE.PlaneGeometry(200, 200) : new THREE.CircleGeometry(20, 96), new THREE.MeshStandardMaterial({ color: cinematic ? 0x080a0b : 0x171719, roughness: cinematic ? 0.86 : 0.78, metalness: cinematic ? 0.05 : 0.15 }));
     floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
-    const platform = new THREE.Mesh(new THREE.CylinderGeometry(3.7, 3.8, 0.035, 96), new THREE.MeshStandardMaterial({ color: 0x222225, roughness: 0.66, metalness: 0.25 }));
+    const platform = new THREE.Mesh(new THREE.CylinderGeometry(3.7, 3.8, 0.035, 96), new THREE.MeshStandardMaterial({ color: cinematic ? 0x101214 : 0x222225, roughness: cinematic ? 0.82 : 0.66, metalness: cinematic ? 0.12 : 0.25 }));
     platform.position.y = -0.03; platform.receiveShadow = true; scene.add(platform);
-    const ktx = new KTX2Loader().setTranscoderPath(new URL("web/media/basis/", document.baseURI).href).detectSupport(renderer);
+    const ktx = new KTX2Loader().setTranscoderPath(new URL(`${assetBase}basis/`, document.baseURI).href).detectSupport(renderer);
     const loader = new GLTFLoader().setKTX2Loader(ktx);
     const disposeObject = (object: THREE.Object3D) => object.traverse((node) => {
       if (!(node instanceof THREE.Mesh)) return;
@@ -60,7 +63,7 @@ export default function CarShowroom() {
         material.dispose();
       }
     });
-    loader.load(new URL("web/media/car-concept.glb", document.baseURI).href, (gltf) => {
+    loader.load(new URL(`${assetBase}car-concept.glb`, document.baseURI).href, (gltf) => {
       if (disposed) { disposeObject(gltf.scene); return; }
       const car = gltf.scene, bounds = new THREE.Box3().setFromObject(car), size = bounds.getSize(new THREE.Vector3());
       car.scale.setScalar(4.8 / Math.max(size.x, size.z));
@@ -72,7 +75,9 @@ export default function CarShowroom() {
         node.castShadow = true; node.receiveShadow = true;
         for (const material of Array.isArray(node.material) ? node.material : [node.material]) {
           if (material instanceof THREE.MeshPhysicalMaterial && /Paint [12]/i.test(material.name)) {
-            material.color.set(finishes[0].color); material.clearcoat = 1; material.clearcoatRoughness = 0.12; paint.add(material);
+            material.color.set(finishes[cinematic ? 2 : 0].color); material.clearcoat = 1; material.clearcoatRoughness = cinematic ? 0.18 : 0.12;
+            if (cinematic) material.roughness = Math.max(material.roughness, 0.25);
+            paint.add(material);
           }
         }
       });
@@ -119,12 +124,12 @@ export default function CarShowroom() {
       controls.dispose(); controlsRef.current = null; paintRef.current = []; ktx.dispose(); disposeObject(scene);
       environmentTexture.dispose(); renderer.dispose(); renderer.domElement.remove();
     };
-  }, []);
+  }, [assetBase, studio]);
   function changeFinish(index: number) { setFinish(index); for (const material of paintRef.current) material.color.set(finishes[index].color); }
   function toggleRotation() { if (controlsRef.current) controlsRef.current.autoRotate = !rotating; setRotating(!rotating); }
   return <div className={`car-showroom ${expanded ? "expanded" : ""}`}>
     <div className="three-mount" ref={mount} />
-    {failed && <img className="showroom-fallback" src="web/media/car-concept-poster.jpg" alt="Concept car shown as a static fallback" />}
+    {failed && <img className="showroom-fallback" src={`${assetBase}car-concept-poster.jpg`} alt="Concept car shown as a static fallback" />}
     <div className="viewer-label"><span>CAR CONCEPT / MATERIAL STUDY</span><strong>{finishes[finish].name}</strong></div>
     <div className="viewer-status" role="status" aria-live="polite">{status}</div>
     <div className="viewer-controls"><div className="paint-controls" role="group" aria-label="Car paint finish">{finishes.map((item, index) => <button key={item.name} style={{ "--swatch": item.color } as CSSProperties} onClick={() => changeFinish(index)} disabled={!ready || failed} aria-label={`${item.name} paint`} aria-pressed={finish === index} title={item.name} />)}</div><div className="camera-controls"><button disabled={!ready || failed} onClick={toggleRotation} aria-label={rotating ? "Pause rotation" : "Start rotation"}>{rotating ? <Pause size={18} /> : <Play size={18} />}</button><button disabled={!ready || failed} onClick={() => { controlsRef.current?.reset(); if (controlsRef.current) controlsRef.current.autoRotate = false; setRotating(false); }} aria-label="Reset camera"><RotateCcw size={18} /></button><button onClick={() => setExpanded(!expanded)} aria-label={expanded ? "Reduce showroom size" : "Expand showroom"}>{expanded ? <Minimize2 size={18} /> : <Maximize2 size={18} />}</button></div></div>

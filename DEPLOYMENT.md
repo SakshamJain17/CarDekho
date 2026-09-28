@@ -1,7 +1,7 @@
 # Hosting CarDekho on GitHub and Vercel
 
 The `index.html` website is a Vite-built, independently deployable frontend.
-Its cinematic landing hero uses React, TypeScript, Tailwind 4 and GSAP.
+Its cinematic landing hero uses React, TypeScript, Tailwind 4 and CSS motion.
 It uses exported versions of the actual selected tree models, including
 their fitted numeric imputation and categorical encoding, to predict in
 JavaScript. Predictions run in the browser. No Python API, Streamlit server,
@@ -15,6 +15,11 @@ experience, it requires the FastAPI backend for predictions. See README's
 alternative setup and deployment instructions: host Python separately, configure
 `VITE_CARDEKHO_API_URL` before the Vercel build, and set the backend's allowed
 frontend origin with `CARDEKHO_CORS_ORIGINS`. The root remains browser-only.
+
+A third entry, **`/performance/`**, is the separate Lamborghini-inspired
+alternative. It uses the same Python API requirements as `/ai/`, and ships in
+the same Vite build. Import branch `feat/cardekho-performance-alternative` for a
+preview deployment without replacing the main-branch production site.
 
 ## Preview locally
 
@@ -121,8 +126,8 @@ include matching source hashes, and the UI rejects mismatched exports.
 The current homepage is mounted by `src/main.tsx` above the prediction
 workspace. It uses locally hosted original automotive artwork and an opt-in
 Three.js showroom (`components/ui/car-showroom.tsx`). The old unused Ferrari
-demo entry was removed during cleanup; the reusable supplied
-`components/ui/hero-scrub.tsx` is retained but not imported by either active page.
+demo entry and unreferenced legacy frame-sequence component were removed during
+cleanup. Neither was used by the current homepage or either alternative.
 
 - `components/ui/`: reusable components, aligned with shadcn's `ui` alias.
 - `styles/index.css`: Tailwind 4 imports, supplied design tokens, shadcn
@@ -133,11 +138,10 @@ demo entry was removed during cleanup; the reusable supplied
 - `components.json`: shadcn-compatible aliases and CSS configuration.
 - `tsconfig.json` and `vite.config.ts`: TypeScript and runtime `@/` aliases.
 
-The `components/ui` folder gives the component a predictable home and makes
-imports such as `@/components/ui/hero-scrub` resolve correctly. No global state
-provider is required. GSAP owns animation state; React refs and local hooks
-manage frames and reduced-motion preferences. Lucide icons provide the
-landing-page arrows.
+The `components/ui` folder gives shared components a predictable home. No global
+state provider is required. React refs and local hooks manage the showroom;
+CSS and intersection observers manage presentation effects and reduced-motion
+preferences. Lucide icons provide the landing-page arrows.
 
 The project has already been configured manually using the official
 [Tailwind Vite setup](https://tailwindcss.com/docs/installation/using-vite)

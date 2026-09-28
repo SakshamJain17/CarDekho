@@ -28,7 +28,23 @@ Current website source, Python training/prediction files, all saved models, orig
 
 Final cleanup also removes `components/demo.tsx`: an unreferenced sample that
 loaded an external Ferrari frame sequence. Neither current entry imports it;
-the reusable supplied `hero-scrub.tsx` remains available. The deleted sample
-is recoverable from Git history. Unused imports and outdated demo documentation
+the deleted sample is recoverable from Git history. Unused imports and outdated demo documentation
 were cleaned up. No CSV, fitted model, training script or evaluation output was
 deleted or retrained.
+
+## Performance edition follow-up
+
+The Lamborghini reference request creates a third independent entry at
+`/performance/`, on `feat/cardekho-performance-alternative`. The existing root
+and `/ai/` source, styles, routes and default predictions are unchanged. New
+source is isolated under `src/performance/`; existing data/chart/predictor modules
+are reused rather than duplicated. The shared 3D showroom accepts an optional
+asset base for nested routes and an opt-in performance studio; its default
+camera, paint, materials and lighting remain identical for the homepage.
+Original generated graphite/yellow artwork is stored locally with its prompt.
+
+Requested final cleanup removes `components/ui/hero-scrub.tsx`, confirmed to have
+no source imports, and the now-unused GSAP dependency. Both are recoverable from
+Git history. Existing styling scaffolding stays because the homepage imports it.
+Duplicate CSV archives and historical model artifacts are retained as user data,
+not treated as disposable files. No training, data or model file is modified.

@@ -1,5 +1,41 @@
 # CarDekho used-car price predictor
 
+## Performance edition — Lamborghini-inspired alternative
+
+The current homepage (`/`) and editorial AI edition (`/ai/`) are preserved.
+The separate **`/performance/`** entry introduces an original graphite/yellow
+automotive design, hexagonal controls, an interactive model line-up and an
+opt-in, locally hosted Three.js showroom. Its photography is original generated
+concept artwork—not Lamborghini branding, a copied vehicle photograph or the
+configured listing. The design reference is
+[Lamborghini's official website](https://www.lamborghini.com/en-en).
+
+Run the existing FastAPI backend and Vite frontend as documented below, then
+open <http://127.0.0.1:5173/performance/>. All three entries are included in
+`npm run build`. The performance edition shares the same verified data,
+evaluation charts, input validation and saved Python model API as `/ai/`.
+Exploring models in the line-up does not silently change the validation-selected
+Gradient Boosting predictor. Decorative architecture bars are labeled as visual
+motifs, not data charts. Paint changes in the 3D concept showroom do not change
+prices. The 10.3 MB GLB loads only after entering the showroom.
+
+New files live in `performance/`, `src/performance/`, and
+`tests/browser/performance.spec.mjs`. The generated hero is
+`web/media/performance-hero.png`; its generation prompt and attribution are in
+`web/media/ASSET_CREDITS.md`. CSS overrides are loaded only by this separate
+entry, so existing pages retain their appearance. The shared showroom's optional
+asset-base prop supports the nested route. Its opt-in performance studio adds a
+closer camera, graphite finish and darker lighting without changing the original
+homepage's default camera, paint or lighting.
+
+Cleanup removes the unreferenced legacy `hero-scrub.tsx` component and unused
+GSAP dependency. They are recoverable from Git history. Original CSVs, fitted
+models, training scripts and evaluation outputs are retained. The existing
+Vercel/Python deployment requirements below also apply to this edition.
+
+To test the built performance edition, start `npm run preview`, then run
+`CARDEKHO_TEST_URL=http://127.0.0.1:4173 npm run test:browser -- tests/browser/performance.spec.mjs`.
+
 ## CarDekho AI — separate premium alternative
 
 The existing homepage is preserved at `/`. The new React/TypeScript presentation
@@ -117,7 +153,7 @@ npm ci --ignore-scripts
 npm run dev
 ```
 
-Open <http://localhost:5173>. The React/TypeScript landing hero uses GSAP and
+Open <http://localhost:5173>. The React/TypeScript landing hero uses CSS motion and
 Tailwind 4; reusable UI components live in `components/ui/`. For a production
 preview, run `npm run build` followed by `npm run preview` (port 4173).
 The static site requires no Python prediction
