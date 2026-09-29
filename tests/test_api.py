@@ -1,11 +1,15 @@
 """The API must use saved Python pipelines and reject invalid vehicle inputs."""
 import json
+import os
+import tempfile
 import unittest
+from unittest.mock import patch
 
 import pandas as pd
 from fastapi.testclient import TestClient
 
 from backend.app import app
+from backend.submissions import initialize
 from model_pipeline import ROOT, features_for
 
 
@@ -83,6 +87,27 @@ class PredictionAPITests(unittest.TestCase):
             self.assertEqual(len(points), int(row.test_rows))
             self.assertEqual(points[0]["actual_inr"], predictions[predictions.model == metric["model"]].iloc[0].actual_inr)
         self.assertAlmostEqual(sum(item["importance"] for item in self.project["feature_importance"]["items"]), 1, places=10)
+
+    def test_opt_in_submission_and_presenter_only_feed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with patch.dict(os.environ, {"CARDEKHO_DATABASE_URL": f"sqlite:///{directory}/submissions.sqlite3", "CARDEKHO_PRESENTER_KEY": "classroom-secret"}):
+                initialize()
+                self.assertEqual(self.client.get("/api/submissions").status_code, 401)
+                self.assertEqual(self.client.get("/api/submissions", headers={"X-Presenter-Key": "wrong"}).status_code, 401)
+                self.assertEqual(self.client.post("/api/submit-valuation", json={**self.vehicle, "selling_price": 99}).status_code, 422)
+                headers = {"X-Presenter-Key": "classroom-secret"}
+                self.assertEqual(self.client.get("/api/submissions", headers=headers).json()["total"], 0)
+                predicted = self.client.post("/api/predict", json=self.vehicle).json()["predicted_price"]
+                self.assertEqual(self.client.get("/api/submissions", headers=headers).json()["total"], 0)
+                response = self.client.post("/api/submit-valuation", json=self.vehicle)
+                self.assertEqual(response.status_code, 201, response.text)
+                self.assertAlmostEqual(response.json()["predicted_price"], predicted)
+                feed = self.client.get("/api/submissions", headers=headers)
+                self.assertEqual(feed.headers["cache-control"], "no-store")
+                self.assertEqual(feed.json()["total"], 1)
+                self.assertEqual(feed.json()["latest"][0]["vehicle_name"], self.vehicle["vehicle_name"])
+                self.assertNotIn("email", feed.text)
+                self.assertNotIn("name", feed.json()["latest"][0])
 
 
 if __name__ == "__main__":

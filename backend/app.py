@@ -3,6 +3,7 @@ import hashlib
 import json
 import math
 import os
+import secrets
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from typing import Literal, Optional
@@ -18,6 +19,7 @@ from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from model_pipeline import ROOT, features_for
+from backend.submissions import add_submission, initialize, snapshot
 
 MODEL_FILES = {"Decision Tree": "decision_tree", "Random Forest": "random_forest", "Gradient Boosting": "gradient_boosting"}
 ModelName = Literal["Decision Tree", "Random Forest", "Gradient Boosting"]
@@ -84,13 +86,14 @@ async def lifespan(app):
     app.state.models = registry
     app.state.project = project
     app.state.started_at = datetime.now(timezone.utc).isoformat()
+    initialize()
     yield
     app.state.models.clear()
 
 
 app = FastAPI(title="CarDekho AI — Python Prediction API", version="1.0.0", lifespan=lifespan)
 origins = [value.strip() for value in os.getenv("CARDEKHO_CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173,http://localhost:4173,http://127.0.0.1:4173").split(",") if value.strip()]
-app.add_middleware(CORSMiddleware, allow_origins=origins, allow_methods=["GET", "POST"], allow_headers=["Content-Type"], allow_credentials=False)
+app.add_middleware(CORSMiddleware, allow_origins=origins, allow_methods=["GET", "POST"], allow_headers=["Content-Type", "X-Presenter-Key"], allow_credentials=False)
 
 
 @app.exception_handler(RequestValidationError)
@@ -175,3 +178,27 @@ def sensitivity(payload: SensitivityInput, request: Request):
     if not all(math.isfinite(float(price)) for price in prices):
         raise HTTPException(500, "The model returned a non-finite sensitivity estimate.")
     return {"model": name, "feature": payload.feature, "points": [{"value": value, "predicted_price": max(0.0, float(price))} for value, price in zip(payload.values, prices)], "interpretation": "Model sensitivity, not a forecast or a causal effect."}
+
+
+@app.post("/api/submit-valuation", status_code=201)
+def submit_valuation(payload: VehicleInput, request: Request):
+    """Share a fresh server-calculated estimate after the visitor explicitly opts in."""
+    values = validate_vehicle(payload, request.app.state.project)
+    name = request.app.state.project["selected_model"]
+    price = predict_values(request, values, name)
+    created_at = datetime.now(timezone.utc).isoformat()
+    add_submission(created_at, values, price, name)
+    return {"status": "shared", "created_at": created_at, "predicted_price": price, "model": name}
+
+
+@app.get("/api/submissions")
+def submissions(request: Request):
+    expected = os.getenv("CARDEKHO_PRESENTER_KEY", "")
+    supplied = request.headers.get("X-Presenter-Key", "")
+    if not expected:
+        raise HTTPException(503, "Presenter dashboard is not configured.")
+    if not supplied or not secrets.compare_digest(supplied, expected):
+        raise HTTPException(401, "Presenter key is required.")
+    response = JSONResponse(snapshot())
+    response.headers["Cache-Control"] = "no-store"
+    return response

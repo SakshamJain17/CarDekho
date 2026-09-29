@@ -1,5 +1,30 @@
 # CarDekho used-car price predictor
 
+## Live classroom submissions on the performance branch
+
+Visitors can calculate a private estimate at `/performance/`, then choose
+**Share this estimate anonymously**. Only this second, explicit action writes a
+record. The API recalculates the estimate from saved Python models rather than
+trusting a client-supplied price. It stores timestamp, vehicle brand/model/year,
+kilometres, selected model and predicted price; it does not request names,
+email addresses or contact details. The presenter-only page is `/presenter/`.
+It shows the total, average and latest 100 shared estimates, polling every three
+seconds. A key is required in the `X-Presenter-Key` header and is held only in
+browser session storage. Do not put the key in a QR code or a Vite environment
+variable. The QR code should point to `/performance/#predict` (or
+`/performance/` if you want visitors to see the video first).
+
+For a local rehearsal, set `CARDEKHO_PRESENTER_KEY` to a long random secret on
+the Python backend. Local submissions default to ignored
+`runtime_data/submissions.sqlite3`. Set `CARDEKHO_DATABASE_URL` to a persistent
+PostgreSQL connection string for production; SQLite on a serverless function is
+not durable. The database and presenter key are server-side secrets. Set
+`VITE_CARDEKHO_API_URL` for the frontend and `CARDEKHO_CORS_ORIGINS` for the
+backend as described below. The Vercel deployment currently builds static pages
+only; a running Python backend and persistent database are required before a
+public QR-code demonstration. Protect the presenter key and consider classroom
+spam/rate limits before exposing the submission endpoint broadly.
+
 ## Performance edition — Lamborghini-inspired alternative
 
 The current homepage (`/`) and editorial AI edition (`/ai/`) are preserved.

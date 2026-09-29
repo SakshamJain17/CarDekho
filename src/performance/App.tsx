@@ -346,6 +346,7 @@ export default function App() {
         <PricePredictor
           project={project}
           apiReady={apiReady}
+          allowSharing
           valuationImage={drivingPoster}
           valuationImageAlt="Real driving-footage frame, not the configured vehicle"
           valuationImageCaption="REAL FOOTAGE / NOT YOUR CONFIGURED LISTING"

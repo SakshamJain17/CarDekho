@@ -17,6 +17,6 @@ export default defineConfig({
   },
   webServer: [
     { command: "npm run dev", url: "http://127.0.0.1:5173", reuseExistingServer: true },
-    { command: ".venv/bin/python -m uvicorn backend.app:app --host 127.0.0.1 --port 8000", url: "http://127.0.0.1:8000/api/health", reuseExistingServer: true },
+    { command: ".venv/bin/python -m uvicorn backend.app:app --host 127.0.0.1 --port 8000", url: "http://127.0.0.1:8000/api/health", reuseExistingServer: true, env: { CARDEKHO_DATABASE_URL: "sqlite:////private/tmp/cardekho-playwright-submissions.sqlite3", CARDEKHO_PRESENTER_KEY: "cardekho-playwright-only-key" } },
   ],
 });

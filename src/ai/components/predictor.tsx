@@ -15,6 +15,7 @@ import {
   predictAll,
   predictPrice,
   predictSensitivity,
+  shareValuation,
 } from "../services/api";
 import type {
   ModelPrediction,
@@ -264,12 +265,14 @@ export function PricePredictor({
   valuationImage = heroImage,
   valuationImageAlt = "Illustrative red concept car, not the vehicle being configured",
   valuationImageCaption = "ILLUSTRATIVE CONCEPT / NOT YOUR LISTING",
+  allowSharing = false,
 }: {
   project: Project;
   apiReady: boolean;
   valuationImage?: string;
   valuationImageAlt?: string;
   valuationImageCaption?: string;
+  allowSharing?: boolean;
 }) {
   const [vehicle, setVehicle] = useState<Vehicle>(() =>
     defaults(project, project.profiles[0]),
@@ -279,6 +282,8 @@ export function PricePredictor({
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [comparisonError, setComparisonError] = useState("");
+  const [shareState, setShareState] = useState<"idle" | "sharing" | "shared">("idle");
+  const [shareError, setShareError] = useState("");
   const controller = useRef<AbortController | null>(null),
     sequence = useRef(0);
   useEffect(() => () => controller.current?.abort(), []);
@@ -293,6 +298,8 @@ export function PricePredictor({
     setResult(null);
     setComparison([]);
     setError("");
+    setShareState("idle");
+    setShareError("");
     if (name === "brand") {
       const profile = project.profiles.find((item) => item.brand === value)!;
       setVehicle(defaults(project, profile));
@@ -430,6 +437,20 @@ export function PricePredictor({
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
+  async function share() {
+    if (!result || shareState !== "idle") return;
+    setShareState("sharing");
+    setShareError("");
+    try {
+      const receipt = await shareValuation(result.inputs);
+      if (Math.abs(receipt.predicted_price - result.predicted_price) > 0.01)
+        throw new Error("The shared estimate changed. Recalculate before presenting it.");
+      setShareState("shared");
+    } catch (cause) {
+      setShareState("idle");
+      setShareError(cause instanceof Error ? cause.message : "Could not share this valuation.");
+    }
+  }
   return (
     <section id="predict" className="ai-section ai-predict-section">
       <Reveal>
@@ -504,6 +525,15 @@ export function PricePredictor({
               <p className="ai-error" role="alert">
                 {error}
               </p>
+            )}
+            {allowSharing && result && (
+              <div className="performance-share">
+                <p>Private by default. You may share this car’s specifications and estimate with the presenter’s live dashboard. No name, email, or contact details are requested.</p>
+                <button type="button" onClick={share} disabled={shareState !== "idle"}>
+                  {shareState === "shared" ? "SHARED WITH THE LIVE DASHBOARD" : shareState === "sharing" ? "SHARING…" : "SHARE THIS ESTIMATE ANONYMOUSLY"}
+                </button>
+                {shareError && <p role="alert">{shareError}</p>}
+              </div>
             )}
           </form>
           <div className="ai-valuation-panel">
