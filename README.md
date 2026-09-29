@@ -1,5 +1,186 @@
 # CarDekho used-car price predictor
 
+## Live classroom submissions on the performance branch
+
+Visitors can calculate a private estimate at `/performance/`, then choose
+**Share this estimate anonymously**. Only this second, explicit action writes a
+record. The API recalculates the estimate from saved Python models rather than
+trusting a client-supplied price. It stores timestamp, vehicle brand/model/year,
+kilometres, selected model and predicted price; it does not request names,
+email addresses or contact details. The presenter-only page is `/presenter/`.
+It shows the total, average and latest 100 shared estimates, polling every three
+seconds. A key is required in the `X-Presenter-Key` header and is held only in
+browser session storage. Do not put the key in a QR code or a Vite environment
+variable. The QR code should point to `/performance/#predict` (or
+`/performance/` if you want visitors to see the video first).
+
+For a local rehearsal, set `CARDEKHO_PRESENTER_KEY` to a long random secret on
+the Python backend. Local submissions default to ignored
+`runtime_data/submissions.sqlite3`. Set `CARDEKHO_DATABASE_URL` to a persistent
+PostgreSQL connection string for production; SQLite on a serverless function is
+not durable. The database and presenter key are server-side secrets. Set
+`VITE_CARDEKHO_API_URL` for the frontend and `CARDEKHO_CORS_ORIGINS` for the
+backend as described below. The Vercel deployment currently builds static pages
+only; a running Python backend and persistent database are required before a
+public QR-code demonstration. Protect the presenter key and consider classroom
+spam/rate limits before exposing the submission endpoint broadly.
+
+## Performance edition — Lamborghini-inspired alternative
+
+The current homepage (`/`) and editorial AI edition (`/ai/`) are preserved.
+The separate **`/performance/`** entry introduces an original graphite/yellow
+automotive design, hexagonal controls, an interactive model line-up and an
+opt-in, locally hosted Three.js showroom. Its homepage now uses licensed real
+driving footage—not the previous AI-generated supercar image. A muted loop,
+pause/play control and accessible "Watch the intro" player provide the video
+experience. A genuine frame from the footage is the poster and valuation image.
+The design reference is
+[Lamborghini's official website](https://www.lamborghini.com/en-en).
+
+Run the existing FastAPI backend and Vite frontend as documented below, then
+open <http://127.0.0.1:5173/performance/>. All three entries are included in
+`npm run build`. The performance edition shares the same verified data,
+evaluation charts, input validation and saved Python model API as `/ai/`.
+Exploring models in the line-up does not silently change the validation-selected
+Gradient Boosting predictor. Decorative architecture bars are labeled as visual
+motifs, not data charts. Paint changes in the 3D concept showroom do not change
+prices. The 10.3 MB GLB loads only after entering the showroom.
+
+New files live in `performance/`, `src/performance/`, and
+`tests/browser/performance.spec.mjs` and `tests/browser/video.spec.mjs`. The
+locally hosted intro is `web/media/driving-intro.mp4` (1280x720, 7.38 seconds,
+approximately 1.74 MB); the real-frame poster is `driving-intro-poster.jpg`.
+Provenance and license are retained in `driving-intro.metadata.json` and
+`web/media/ASSET_CREDITS.md`. CSS overrides are loaded only by this separate
+entry, so existing pages retain their appearance. The shared showroom's optional
+asset-base prop supports the nested route. Its opt-in performance studio adds a
+closer camera, graphite finish and darker lighting without changing the original
+homepage's default camera, paint or lighting.
+
+Cleanup removes the unreferenced legacy `hero-scrub.tsx` component and unused
+GSAP dependency. They are recoverable from Git history. Original CSVs, fitted
+models, training scripts and evaluation outputs are retained. The existing
+Vercel/Python deployment requirements below also apply to this edition.
+
+The video is muted/inline and loops on the homepage, pauses offscreen and when
+the tab is hidden, and never downloads automatically for reduced-motion or
+data-saver users. These users can explicitly opt into playback. Video failures
+keep the real poster visible and do not disable model predictions. The intro
+player uses native controls/fullscreen; Escape closes its accessible dialog.
+No fabricated audio, generated imagery or Lamborghini campaign footage is used
+in the performance edition. The other two editions' existing imagery is preserved.
+
+To test the built performance edition, start `npm run preview`, then run
+`CARDEKHO_TEST_URL=http://127.0.0.1:4173 npm run test:browser -- tests/browser/performance.spec.mjs`.
+
+## CarDekho AI — separate premium alternative
+
+The existing homepage is preserved at `/`. The new React/TypeScript presentation
+is at **`/ai/`**. It uses original automotive artwork, a black/off-white/red visual
+system, locally hosted open-source fonts, responsive navigation, Recharts,
+accessible data tables, and a vehicle configurator backed by **real Python
+inference**. It does not import the original site's JavaScript model engine.
+
+### Run the alternative
+
+Use two terminals in the repository directory. No API key is needed.
+
+```bash
+# Terminal 1: existing saved sklearn pipelines, loaded once on startup
+source .venv/bin/activate
+python -m pip install -r backend/requirements.txt
+python -m uvicorn backend.app:app --host 127.0.0.1 --port 8000
+```
+
+```bash
+# Terminal 2: React frontend, with /api proxied to Python
+npm ci --ignore-scripts
+npm run dev
+```
+
+Open <http://127.0.0.1:5173/ai/>. API documentation is at
+<http://127.0.0.1:8000/docs>. The dataset narrative and evaluation charts remain
+readable without Python; calculating prices requires the backend. Failures are
+displayed explicitly, never replaced with mocked predictions.
+
+### Actual data and models
+
+The alternative focuses on `Car details v3.csv`: 8,128 raw records, 13 source
+columns including the target, 6,926 cleaned rows and 12 model features. Other
+datasets remain independent and available on the original website/Streamlit app.
+The actual regressors are **Decision Tree, Random Forest and Gradient Boosting**.
+Gradient Boosting remains the validation-selected v3 default even though Random
+Forest has the lowest independent test RMSE. There is no Linear Regression
+artifact, invented 80/20 split, fabricated train R² or per-vehicle confidence score.
+
+The presentation JSON is generated from source data and genuine saved outputs:
+
+| v3 model | Independent test R² | MAE / INR | RMSE / INR |
+|---|---:|---:|---:|
+| Decision Tree | 0.9162 | 84,454 | 147,110 |
+| Random Forest | 0.9376 | 71,176 | 126,944 |
+| Gradient Boosting — validation-selected | 0.8721 | 82,801 | 181,661 |
+
+Source: `outputs/v3/model_metrics.csv`; 1,387 independent test rows per model.
+
+```bash
+python scripts/export_ai_data.py
+```
+
+After retraining, run `python export_web.py` before that command to refresh
+profile definitions. The exporter checks dataset/model provenance and exports
+all held-out predictions for the scatter chart. Random Forest importance is
+computed from its actual fitted pipeline, aggregating one-hot columns back to
+source attributes. API startup checks the CSV hash and the saved sklearn version
+(1.6.1); load only trusted repository joblib files.
+
+### Python API and configurator
+
+- `GET /api/health`: loaded model status.
+- `GET /api/project`: verified presentation data.
+- `POST /api/predict`: 12 flat vehicle features; optional `model` selects one of
+  the three exact model names. Returns price in INR, provenance and warnings.
+- `POST /api/predict-all-models`: the same 12 features, three genuine estimates.
+- `POST /api/sensitivity`: `{vehicle, feature, values, model?}`; feature is `year`
+  or `km_driven`, maximum nine finite values within observed data ranges.
+
+Use the configurator's brand-linked model options, enter usage/powertrain/cabin
+details and choose Calculate Value. Car age maps to the existing `year` feature
+using the current calendar year. Invalid categories, mismatched identities,
+extra target fields and impossible numbers return 422. Editing inputs clears
+stale estimates. Sensitivity changes one feature while keeping the others fixed;
+it is not a causal effect or depreciation forecast. Export downloads the actual
+valuation response and all-model comparison as JSON.
+
+### Deploy the alternative
+
+GitHub stores the source; Vercel serves the Vite build (`npm run build`, output
+`dist`). Both HTML entries are built. **Vercel's static frontend does not run
+these Python models.** Deploy `backend.app:app` separately on a Python-capable
+service with repository data/model files and `backend/requirements.txt`.
+Set `VITE_CARDEKHO_API_URL=https://YOUR-BACKEND/api` in Vercel **before building**.
+Set `CARDEKHO_CORS_ORIGINS=https://YOUR-FRONTEND.vercel.app` on the Python host
+(comma-separated exact origins if multiple domains are needed). Use HTTPS on
+both sides. Do not expose credentials in Vite variables. Runtime models are
+historical academic estimators, not a production marketplace price guarantee.
+
+### Verify
+
+```bash
+python -m unittest discover -s tests -p 'test_*.py'
+npm test
+npm run build
+npm run test:browser
+```
+
+Browser tests start the local API and frontend and use installed Google Chrome;
+override `CARDEKHO_BROWSER_PATH` if Chrome is elsewhere. Evidence screenshots
+are generated under ignored `test-results/`. The audit and preservation decisions
+are documented in `REPOSITORY_AUDIT.md`; licenses are in
+`web/media/ASSET_CREDITS.md` and `web/media/fonts/*-OFL.txt`.
+
+## Existing experiences
+
 For the React-enhanced HTML website and GitHub/Vercel hosting, read `DEPLOYMENT.md`.
 `index.html` loads the exported selected models and runs real predictions
 directly in the browser. The Python/Streamlit workflow below remains available.
@@ -9,7 +190,7 @@ npm ci --ignore-scripts
 npm run dev
 ```
 
-Open <http://localhost:5173>. The React/TypeScript landing hero uses GSAP and
+Open <http://localhost:5173>. The React/TypeScript landing hero uses CSS motion and
 Tailwind 4; reusable UI components live in `components/ui/`. For a production
 preview, run `npm run build` followed by `npm run preview` (port 4173).
 The static site requires no Python prediction
@@ -128,6 +309,12 @@ python -m unittest discover -s tests -v
 ```text
 CarDekho/
 ├── data/                   # Four original CSVs
+├── ai/index.html           # Alternative HTML entry, /ai/
+├── src/ai/                 # React presentation, charts, configurator, API client
+├── backend/                # FastAPI; cached real Python pipelines
+├── scripts/export_ai_data.py # Genuine presentation-data export
+├── web/data/ai-project.json # Source provenance, metrics, held-out points
+├── web/media/              # Original artwork, licensed 3D asset, local fonts
 ├── main.py                 # Streamlit interface
 ├── model_pipeline.py       # Schema adapters, grouped splits, model evaluation
 ├── train.py                # All experiments, export, charts and report

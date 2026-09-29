@@ -1,0 +1,19 @@
+{
+  "title": "A red sports car traveling along a curvy asphalt road at dawn",
+  "provider": "Mixkit",
+  "item_id": 52427,
+  "source_page": "https://mixkit.co/free-stock-video/a-red-sports-car-traveling-along-a-curvy-asphalt-road-52427/",
+  "source_download": "https://assets.mixkit.co/videos/52427/52427-1080.mp4",
+  "license": "Mixkit Stock Video Free License",
+  "license_url": "https://mixkit.co/license/#videoFree",
+  "verified_at": "2026-09-29",
+  "local_video": "driving-intro.mp4",
+  "duration_seconds": 7.382375,
+  "width": 1280,
+  "height": 720,
+  "codec": "H.264",
+  "audio": "Removed; silent background and intro film",
+  "transformation": "Downscale to 1280x720, CRF 23, yuv420p, faststart; poster is an actual source frame at 2 seconds",
+  "use": "Embedded website intro, not resale or distribution as a stock-video collection",
+  "disclaimer": "Depicted vehicle is stock footage, not the configured listing; no automaker endorsement is implied."
+}

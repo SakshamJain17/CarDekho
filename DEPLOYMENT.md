@@ -1,7 +1,7 @@
 # Hosting CarDekho on GitHub and Vercel
 
 The `index.html` website is a Vite-built, independently deployable frontend.
-Its cinematic landing hero uses React, TypeScript, Tailwind 4 and GSAP.
+Its cinematic landing hero uses React, TypeScript, Tailwind 4 and CSS motion.
 It uses exported versions of the actual selected tree models, including
 their fitted numeric imputation and categorical encoding, to predict in
 JavaScript. Predictions run in the browser. No Python API, Streamlit server,
@@ -9,6 +9,17 @@ API key, or database is required for the hosted website.
 
 The Streamlit application and Python training workflow remain available
 locally. All four datasets remain separate; deployment does not merge them.
+
+The separate **CarDekho AI alternative is at `/ai/`**. Unlike the original root
+experience, it requires the FastAPI backend for predictions. See README's
+alternative setup and deployment instructions: host Python separately, configure
+`VITE_CARDEKHO_API_URL` before the Vercel build, and set the backend's allowed
+frontend origin with `CARDEKHO_CORS_ORIGINS`. The root remains browser-only.
+
+A third entry, **`/performance/`**, is the separate Lamborghini-inspired
+alternative. It uses the same Python API requirements as `/ai/`, and ships in
+the same Vite build. Import branch `feat/cardekho-performance-alternative` for a
+preview deployment without replacing the main-branch production site.
 
 ## Preview locally
 
@@ -100,6 +111,7 @@ the official [GitHub Pages custom-workflow documentation](https://docs.github.co
 source .venv/bin/activate
 python train.py
 python export_web.py
+python scripts/export_ai_data.py
 npm test
 npm run build
 ```
@@ -111,12 +123,11 @@ include matching source hashes, and the UI rejects mismatched exports.
 
 ## Cinematic hero and component structure
 
-The supplied component is in `components/ui/hero-scrub.tsx`. The original
-Ferrari demo is preserved in `components/demo.tsx`; the actual CarDekho landing
-page is mounted by `src/main.tsx` above the prediction workspace. A stable
-frame URL function loads the supplied 300-frame Ferrari sequence, with
-CarDekho/Price Lab headings and a dark accent matched to the current UI.
-The render is decorative, independent of the selected valuation dataset.
+The current homepage is mounted by `src/main.tsx` above the prediction
+workspace. It uses locally hosted original automotive artwork and an opt-in
+Three.js showroom (`components/ui/car-showroom.tsx`). The old unused Ferrari
+demo entry and unreferenced legacy frame-sequence component were removed during
+cleanup. Neither was used by the current homepage or either alternative.
 
 - `components/ui/`: reusable components, aligned with shadcn's `ui` alias.
 - `styles/index.css`: Tailwind 4 imports, supplied design tokens, shadcn
@@ -127,11 +138,10 @@ The render is decorative, independent of the selected valuation dataset.
 - `components.json`: shadcn-compatible aliases and CSS configuration.
 - `tsconfig.json` and `vite.config.ts`: TypeScript and runtime `@/` aliases.
 
-The `components/ui` folder gives the component a predictable home and makes
-imports such as `@/components/ui/hero-scrub` resolve correctly. No global state
-provider is required. GSAP owns animation state; React refs and local hooks
-manage frames and reduced-motion preferences. Lucide icons provide the
-landing-page arrows.
+The `components/ui` folder gives shared components a predictable home. No global
+state provider is required. React refs and local hooks manage the showroom;
+CSS and intersection observers manage presentation effects and reduced-motion
+preferences. Lucide icons provide the landing-page arrows.
 
 The project has already been configured manually using the official
 [Tailwind Vite setup](https://tailwindcss.com/docs/installation/using-vite)
@@ -142,18 +152,11 @@ install Tailwind with its Vite plugin, configure the `@/` aliases, and run
 `npx shadcn@latest init` as described in those guides. Do not re-scaffold this
 existing project.
 
-The normal hero occupies about 4.2 viewport heights with a sticky canvas and
-scroll-driven frame playback. Mobile starts at a larger card scale than
-desktop. Reduced-motion mode uses a single-viewport static poster without
-loading the animation sequence. Frame failures switch to a static poster;
-the skip link and "Explore the price lab" button always lead to the workspace.
-Animations and image callbacks are cleaned up on unmount. The image sequence
-and Unsplash poster are external assets and need network access.
-
-Asset references:
-
-- Supplied [Ferrari image sequence](https://github.com/duthiljean/ferrari-hero-demo)
-- [Unsplash fallback car image](https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&q=80)
+The showroom loads only after entering the 3D experience. It supports drag/
+keyboard rotation, zoom, paint finishes and camera reset, pauses offscreen,
+respects reduced motion, and falls back to a local poster when WebGL is not
+available. Its concept model is illustrative, not the configured listing.
+Credits and licenses are in `web/media/ASSET_CREDITS.md`.
 
 ## Deployment checks and limitations
 
@@ -168,5 +171,6 @@ Asset references:
 - The exported selected models are public website assets. Only four winners
   are shipped to browsers; all 12 fitted Python pipelines remain local outputs.
 - Historic-price and small-dataset-unit limitations are shown in both apps.
-- Files and build configuration are prepared locally. A GitHub repository and
-  public Vercel deployment still need to be created/imported in your accounts.
+- The source repository exists at `SakshamJain17/CarDekho`. Import it into
+  Vercel if not already connected. The alternative branch can be deployed as
+  a preview without replacing the main-branch production homepage.

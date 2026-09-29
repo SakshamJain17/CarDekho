@@ -1,0 +1,481 @@
+import { useState } from "react";
+import {
+  BarChart,
+  Bar,
+  CartesianGrid,
+  Cell,
+  ReferenceLine,
+  ResponsiveContainer,
+  ScatterChart,
+  Scatter,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import type { Point, Project } from "../types";
+import { Reveal, SectionHeader, count, money } from "./ui";
+
+export const modelColor = (model: string) =>
+  model === "Random Forest"
+    ? "#E10600"
+    : model === "Gradient Boosting"
+      ? "#F5F5F2"
+      : "#8D8D8D";
+const descriptions: Record<string, { label: string; copy: string }> = {
+  "Decision Tree": {
+    label: "SINGLE TREE",
+    copy: "A single tree partitions vehicle attributes into regions with similar prices. It is a transparent nonlinear comparison model—not a linear regression model.",
+  },
+  "Random Forest": {
+    label: "TREE ENSEMBLE",
+    copy: "Multiple decision trees learn interactions between specifications and ownership. Averaging their predictions reduces the instability of a single tree.",
+  },
+  "Gradient Boosting": {
+    label: "SEQUENTIAL ENSEMBLE",
+    copy: "A sequence of weak learners progressively corrects earlier errors. Validation—not the independent test set—selects this project's default estimator.",
+  },
+};
+const tooltipStyle = {
+  background: "#171717",
+  border: "1px solid #444",
+  color: "#F5F5F2",
+  fontSize: 12,
+};
+export function ModelShowcase({ project }: { project: Project }) {
+  const bestTest = [...project.metrics].sort(
+    (a, b) => a.test_rmse - b.test_rmse,
+  )[0].model;
+  return (
+    <section id="models" className="ai-section ai-model-section">
+      <Reveal>
+        <SectionHeader number="05" label="THE MODELS">
+          THREE APPROACHES.
+          <br />
+          <span>ONE QUESTION.</span>
+        </SectionHeader>
+        <div className="ai-model-panels">
+          {project.metrics.map((metric, index) => (
+            <article
+              className={`ai-model-panel ${metric.model === bestTest ? "test-best" : ""}`}
+              key={metric.model}
+            >
+              <div className="ai-model-number">
+                0{index + 1}
+                <span>{descriptions[metric.model]?.label || "REGRESSOR"}</span>
+              </div>
+              <div className="ai-model-description">
+                <h3>{metric.model.toUpperCase()}</h3>
+                <p>{descriptions[metric.model]?.copy}</p>
+                <div className="ai-model-badges">
+                  {metric.selected && <span>VALIDATION-SELECTED DEFAULT</span>}
+                  {metric.model === bestTest && (
+                    <span>LOWEST INDEPENDENT TEST RMSE</span>
+                  )}
+                </div>
+              </div>
+              <div className="ai-model-metrics">
+                <div>
+                  <strong>{metric.test_r2.toFixed(3)}</strong>
+                  <span>TEST R²</span>
+                </div>
+                <div>
+                  <strong>₹{(metric.test_mae / 1000).toFixed(1)}K</strong>
+                  <span>TEST MAE</span>
+                </div>
+                <div>
+                  <strong>₹{(metric.test_rmse / 1000).toFixed(1)}K</strong>
+                  <span>TEST RMSE</span>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+        <p className="ai-note">
+          All candidates use the same grouped evaluation splits. Hyperparameters
+          are fixed, not tuned. Random Forest's stronger test result does not
+          retroactively replace the validation-selected {project.selected_model}
+          .
+        </p>
+      </Reveal>
+    </section>
+  );
+}
+export function ModelComparison({ project }: { project: Project }) {
+  return (
+    <section id="performance" className="ai-section">
+      <Reveal>
+        <SectionHeader
+          number="06"
+          label="INDEPENDENT EVALUATION"
+          copy="Higher R² explains more variation. Lower MAE and RMSE mean smaller errors. These metrics are not individual-prediction confidence scores."
+        >
+          PERFORMANCE
+          <br />
+          <span>WITHOUT THE NOISE.</span>
+        </SectionHeader>
+        <div className="ai-chart-grid">
+          {[
+            {
+              key: "test_r2",
+              title: "EXPLAINED VARIATION",
+              label: "TEST R²",
+              unit: false,
+            },
+            {
+              key: "test_mae",
+              title: "AVERAGE ABSOLUTE ERROR",
+              label: "TEST MAE / INR",
+              unit: true,
+            },
+            {
+              key: "test_rmse",
+              title: "LARGE-ERROR SENSITIVITY",
+              label: "TEST RMSE / INR",
+              unit: true,
+            },
+          ].map((chart) => (
+            <div className="ai-chart-panel" key={chart.key}>
+              <span className="ai-eyebrow">{chart.title}</span>
+              <h3>{chart.label}</h3>
+              <div className="ai-chart">
+                <ResponsiveContainer width="100%" height={260}>
+                  <BarChart
+                    data={project.metrics}
+                    margin={{ top: 20, right: 8, left: 0, bottom: 20 }}
+                    accessibilityLayer
+                  >
+                    <CartesianGrid vertical={false} stroke="#ffffff12" />
+                    <XAxis
+                      dataKey="model"
+                      tickFormatter={(value: string) =>
+                        value === "Decision Tree"
+                          ? "Tree"
+                          : value === "Random Forest"
+                            ? "Forest"
+                            : "Boosting"
+                      }
+                      tick={{ fill: "#aaa", fontSize: 11 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      width={58}
+                      domain={chart.unit ? [0, "auto"] : [0, 1]}
+                      tickFormatter={(value: number) =>
+                        chart.unit
+                          ? `₹${(value / 100000).toFixed(1)}L`
+                          : value.toFixed(1)
+                      }
+                      tick={{ fill: "#aaa", fontSize: 10 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      cursor={{ fill: "#ffffff06" }}
+                      contentStyle={tooltipStyle}
+                      formatter={(value) =>
+                        chart.unit
+                          ? money(Number(value))
+                          : Number(value).toFixed(4)
+                      }
+                    />
+                    <Bar
+                      dataKey={chart.key}
+                      name={chart.label}
+                      isAnimationActive={
+                        !matchMedia("(prefers-reduced-motion: reduce)").matches
+                      }
+                      barSize={35}
+                    >
+                      {project.metrics.map((metric) => (
+                        <Cell
+                          key={metric.model}
+                          fill={modelColor(metric.model)}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <p className="ai-chart-caption">
+                {project.metrics
+                  .map(
+                    (metric) =>
+                      `${metric.model}: ${chart.unit ? money(Number(metric[chart.key as keyof typeof metric])) : Number(metric[chart.key as keyof typeof metric]).toFixed(4)}`,
+                  )
+                  .join(" · ")}
+              </p>
+            </div>
+          ))}
+        </div>
+        <div className="ai-table-scroll">
+          <table>
+            <caption>
+              Source: outputs/v3/model_metrics.csv · same{" "}
+              {count(project.split.test)} independent test records per model
+            </caption>
+            <thead>
+              <tr>
+                <th>MODEL</th>
+                <th>TRAIN R²</th>
+                <th>TEST R²</th>
+                <th>VALIDATION RMSE</th>
+                <th>TEST MAE</th>
+                <th>TEST RMSE</th>
+              </tr>
+            </thead>
+            <tbody>
+              {project.metrics.map((metric) => (
+                <tr key={metric.model}>
+                  <td>
+                    {metric.model}
+                    {metric.selected ? " / selected" : ""}
+                  </td>
+                  <td>Not exported</td>
+                  <td>{metric.test_r2.toFixed(4)}</td>
+                  <td>{money(metric.validation_rmse)}</td>
+                  <td>{money(metric.test_mae)}</td>
+                  <td>{money(metric.test_rmse)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="ai-note">
+          Train R² is not available in the saved outputs. It is not fabricated
+          or recomputed from the final full-data demonstration pipelines.{" "}
+          <a href="../web/data/v3.metrics.csv" download>
+            Download evaluation CSV ↗
+          </a>
+        </p>
+      </Reveal>
+    </section>
+  );
+}
+function ScatterTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: readonly { payload?: Point }[];
+}) {
+  const point = payload?.[0]?.payload;
+  if (!active || !point || point.actual_inr === undefined) return null;
+  return (
+    <div className="ai-chart-tooltip">
+      <strong>HELD-OUT RECORD {point.row_index}</strong>
+      <span>Actual {money(point.actual_inr)}</span>
+      <span>Predicted {money(point.predicted_inr)}</span>
+      <span>Difference {money(point.predicted_inr - point.actual_inr)}</span>
+    </div>
+  );
+}
+export function ActualVsPredicted({ project }: { project: Project }) {
+  const [model, setModel] = useState(project.selected_model);
+  const points = project.test_predictions[model];
+  const maximum =
+    Math.ceil(
+      Math.max(
+        ...points.flatMap((point) => [point.actual_inr, point.predicted_inr]),
+      ) / 100000,
+    ) * 100000;
+  return (
+    <section className="ai-section ai-scatter-section">
+      <Reveal>
+        <div className="ai-section-flex">
+          <SectionHeader number="07" label="ACTUAL VS PREDICTED">
+            PREDICTION
+            <br />
+            <span>MEETS REALITY.</span>
+          </SectionHeader>
+          <div>
+            <label htmlFor="ai-scatter-model">EVALUATION MODEL</label>
+            <select
+              id="ai-scatter-model"
+              value={model}
+              onChange={(event) => setModel(event.target.value)}
+            >
+              {project.metrics.map((metric) => (
+                <option key={metric.model}>{metric.model}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div className="ai-wide-chart">
+          <ResponsiveContainer width="100%" height={420}>
+            <ScatterChart
+              margin={{ top: 20, right: 25, bottom: 40, left: 15 }}
+              accessibilityLayer
+            >
+              <CartesianGrid stroke="#ffffff10" />
+              <XAxis
+                type="number"
+                dataKey="actual_inr"
+                domain={[0, maximum]}
+                name="Actual price"
+                tickFormatter={(value: number) =>
+                  `₹${(value / 100000).toFixed(0)}L`
+                }
+                tick={{ fill: "#aaa", fontSize: 11 }}
+                label={{
+                  value: "ACTUAL SELLING PRICE / INR",
+                  position: "bottom",
+                  offset: 20,
+                  fill: "#aaa",
+                  fontSize: 10,
+                }}
+              />
+              <YAxis
+                type="number"
+                dataKey="predicted_inr"
+                domain={[0, maximum]}
+                name="Predicted price"
+                tickFormatter={(value: number) =>
+                  `₹${(value / 100000).toFixed(0)}L`
+                }
+                tick={{ fill: "#aaa", fontSize: 11 }}
+                width={65}
+              />
+              <Tooltip
+                content={<ScatterTooltip />}
+                cursor={{ strokeDasharray: "3 3" }}
+              />
+              <ReferenceLine
+                segment={[
+                  { x: 0, y: 0 },
+                  { x: maximum, y: maximum },
+                ]}
+                stroke="#aaa"
+                strokeDasharray="5 6"
+              />
+              <Scatter
+                name={model}
+                data={points}
+                fill={modelColor(model)}
+                fillOpacity={0.55}
+                isAnimationActive={false}
+              />
+            </ScatterChart>
+          </ResponsiveContainer>
+        </div>
+        <p className="ai-note">
+          All {count(points.length)} genuine held-out predictions for {model}.
+          The diagonal indicates perfect prediction, not a fitted regression
+          line. These points come from evaluation models before the final
+          deployment refit.
+        </p>
+        <details className="ai-accordion">
+          <summary>ACCESSIBLE DATA PREVIEW / FIRST TEN TEST RECORDS</summary>
+          <div className="ai-table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>ROW</th>
+                  <th>ACTUAL</th>
+                  <th>PREDICTED</th>
+                  <th>DIFFERENCE</th>
+                </tr>
+              </thead>
+              <tbody>
+                {points.slice(0, 10).map((point) => (
+                  <tr key={point.row_index}>
+                    <td>{point.row_index}</td>
+                    <td>{money(point.actual_inr)}</td>
+                    <td>{money(point.predicted_inr)}</td>
+                    <td>{money(point.predicted_inr - point.actual_inr)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </Reveal>
+    </section>
+  );
+}
+export function FeatureImportance({ project }: { project: Project }) {
+  const items = project.feature_importance.items.slice(0, 10);
+  return (
+    <section id="insights" className="ai-section">
+      <Reveal>
+        <div className="ai-editorial">
+          <SectionHeader number="08" label="RANDOM FOREST / FEATURE IMPORTANCE">
+            WHAT MOVES
+            <br />
+            <span>THE VALUE?</span>
+          </SectionHeader>
+          <p className="ai-editorial-copy">
+            Learned from the actual saved Random Forest. One-hot columns are
+            correctly aggregated back to their original attributes; the order is
+            computed, never assumed.
+          </p>
+        </div>
+        <div className="ai-wide-chart ai-importance-chart">
+          <ResponsiveContainer width="100%" height={420}>
+            <BarChart
+              layout="vertical"
+              data={items}
+              margin={{ left: 15, right: 30, top: 15, bottom: 20 }}
+              accessibilityLayer
+            >
+              <CartesianGrid horizontal={false} stroke="#ffffff10" />
+              <XAxis
+                type="number"
+                tickFormatter={(value: number) =>
+                  `${(value * 100).toFixed(0)}%`
+                }
+                tick={{ fill: "#aaa", fontSize: 10 }}
+              />
+              <YAxis
+                type="category"
+                dataKey="feature"
+                width={110}
+                tick={{ fill: "#ddd", fontSize: 12 }}
+              />
+              <Tooltip
+                contentStyle={tooltipStyle}
+                formatter={(value) => `${(Number(value) * 100).toFixed(2)}%`}
+              />
+              <Bar
+                dataKey="importance"
+                name="Aggregated importance"
+                fill="#E10600"
+                barSize={13}
+                isAnimationActive={
+                  !matchMedia("(prefers-reduced-motion: reduce)").matches
+                }
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        <p className="ai-note">
+          Feature importance describes predictive dependence, not causation or
+          an explanation of a specific vehicle's price. Source: saved Random
+          Forest fitted pipeline; aggregation:{" "}
+          {project.feature_importance.aggregation}.
+        </p>
+        <details className="ai-accordion">
+          <summary>FEATURE IMPORTANCE VALUES / ACCESSIBLE TABLE</summary>
+          <div className="ai-table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>FEATURE</th>
+                  <th>IMPORTANCE</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((item) => (
+                  <tr key={item.feature}>
+                    <td>{item.feature}</td>
+                    <td>{(item.importance * 100).toFixed(3)}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </Reveal>
+    </section>
+  );
+}

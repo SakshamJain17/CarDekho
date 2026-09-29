@@ -9,3 +9,6 @@ node_modules/
 .vscode/
 .env
 .env.*
+test-results/
+playwright-report/
+runtime_data/
